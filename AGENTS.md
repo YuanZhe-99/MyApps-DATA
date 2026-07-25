@@ -1,121 +1,133 @@
 # AGENTS.md — myapps_data (MyApps-DATA)
 
-## What this is
+Operating guide for agents working on this repository. This file holds **only** rules about how to
+work here. Everything describing what the code *is* or *does* lives in `doc/en-us/` — see
+[Where to read what](#where-to-read-what).
 
-`myapps_data` is the shared WebDAV-sync and data-management (backup/restore, ZIP
-import/export) Flutter package consumed by three sibling apps: **MyAnime**, **MyDay**,
-and **MyDevice**. It exists to replace their hand-ported, drifted copies of
-`lib/shared/services/{webdav_service,sync_merge,sync_progress,sync_wake_lock,auto_sync_service,backup_service,import_export_service}.dart`.
+`myapps_data` is the shared WebDAV-sync and data-management package consumed by three sibling apps
+(**MyAnime**, **MyDay**, **MyDevice**) as a git submodule at `packages/myapps_data`. It is the
+load-bearing layer under all three: a bug here ships to all of them, and a wire-format change here
+can strand existing installs.
 
-The authoritative extraction plan lives in the local workspace root as `PLAN.md`
-(sibling of the app checkouts, not inside any repo). Read it before doing structural
-work here. The behavior contract is its "hard invariants" table (I1–I10); the
-per-behavior reference is `docs/feature-matrix.md` (produced by plan task P0.1 —
-if it does not exist yet, that task has not run).
+## Reading order
 
-## Repository & remotes
+When you need to understand code, read in this order and stop as soon as you have what you need:
 
-- `origin` -> `<local_gitea_address>` (private Gitea; the real address is deliberately
-  **never** written in committed files — find it via `git remote -v` in any sibling repo).
-- `github` -> `git@github.com:YuanZhe-99/MyApps-DATA.git` (public mirror; app CI fetches
-  the submodule from here).
+1. **`doc/en-us/`** — start here, always. `architecture.md` for shape and consumption model;
+   `functions/<path>.md` for a specific file's declarations;
+   `functions/INDEX.md` to find the right page.
+2. **Comments in the source** — the Function Explanation Layer above each declaration.
+3. **The implementation** — only when the docs and comments are insufficient, or when you must
+   confirm actual behavior before changing it.
 
-**Masking rule:** never commit the real Gitea host/port anywhere in this repo — docs,
-comments, CI, `.gitmodules` (consumers use the relative URL `../MyApps-DATA.git`).
+Do not jump straight to reading source bodies. Do not trust the docs over the code when they
+disagree on something you are about to change — verify, then fix the docs.
 
-## How the apps consume this package
+## Where to read what
 
-Each app embeds this repo as a git submodule at `packages/myapps_data` (relative URL
-`../MyApps-DATA.git`, so it resolves against whichever host the app was cloned from)
-plus a pub path dependency. **The submodule commit SHA is the lockfile** — pub does not
-lock path-dependency contents.
+| Question | Read |
+|---|---|
+| What is this package, how do apps consume it | `doc/en-us/architecture.md` |
+| What does this file/function do | `doc/en-us/functions/<mirrored path>.md` |
+| Which page covers which source file | `doc/en-us/functions/INDEX.md` |
+| Why a behavior is the way it is, per app | `docs/feature-matrix.md` (the P0.1 three-way audit) |
+| The extraction plan, invariants I1–I10, phase status | `PLAN.md` at the **workspace root** (sibling of the app checkouts, not inside any repo) |
+| English→Chinese terminology | `doc/en-us/translation-guide.md` |
 
-Rules:
-- Push changes here to **both** remotes *before* bumping any app's submodule pointer.
-- Apps must pin to a **tagged** commit before any app release.
-- Releases: semver, `CHANGELOG.md` entry, tag `vX.Y.Z` pushed to both remotes.
+## Required workflow
 
-## Conventions (inherited from the three apps — mandatory)
+1. Treat the user's message as the modification request.
+2. Before editing, fetch the relevant remote(s) and check whether the local branch is behind.
+   Resolve any divergence before starting.
+3. Read per [Reading order](#reading-order).
+4. Plan when the work is non-trivial, then implement.
+5. Keep changes scoped; do not revert unrelated work in the tree.
+6. Update documentation in the same change set — see [Documentation maintenance](#documentation-maintenance).
+7. Verify: `flutter pub get && flutter analyze && flutter test`.
+8. Report briefly what changed, what was verified, and anything you could not do.
+9. Ask before pushing. The user confirms the release version before any release push.
 
-- **Function Explanation Layer**: every function/method/constructor/getter/setter carries
-  a structured doc comment immediately above it:
+## Documentation maintenance
+
+**Docs are the primary artifact. Update them first, and never let them drift.**
+
+Any change that adds, removes, or changes the behavior or signature of a declaration must update, in
+the same commit:
+
+- the per-file page under `doc/en-us/functions/`,
+- its `INDEX.md` row (including the declaration counts),
+- `architecture.md` when the change affects the package's shape or consumption model.
+
+Once `doc/zh-cn/` exists it must mirror `doc/en-us/` exactly — same files, headings, tables, and
+examples — updated in the same commit and translated per `translation-guide.md`. New terminology goes
+into the glossary in **all four** sibling repos, not just this one.
+
+Prefer putting explanation in `doc/en-us/`. Keep this file limited to agent instructions; if you find
+yourself adding a paragraph here that describes how the code works, it belongs in the docs instead.
+
+Documentation-only commits do not bump versions or create tags.
+
+## Authoring rules
+
+- **Function Explanation Layer** — every function, method, constructor, getter, and setter carries a
+  structured doc comment immediately above it:
   `/// Purpose: … / Inputs: … / Returns: … / Side effects: … / Notes: …`.
-  Agents investigating this codebase read comments/signatures first, source bodies only
-  when necessary.
-- **UTC timestamps**: anything compared across devices (`modifiedAt`, lock timestamps)
-  uses `DateTime.now().toUtc()`. Local-time values break sync conflict detection.
-- **JSON output** is pretty-printed via `JsonEncoder.withIndent('  ')`.
-- **Unknown JSON fields are preserved** end-to-end (parse → merge → write). Never drop
-  fields this package doesn't model.
-- **No app-specific knowledge**: no app model imports, no hardcoded data-file lists, no
-  user-facing localized strings. Everything app-specific arrives via `DataModule`
-  descriptors and the `StorageAdapter` interface (see PLAN.md §3.2).
+  Add it for new declarations; update it in the same change when you edit an existing one.
+- **UTC timestamps** for anything compared across devices. Local-time values break sync conflict
+  detection.
+- **Pretty-printed JSON** via `JsonEncoder.withIndent('  ')`.
+- **Preserve unknown JSON fields** end-to-end (parse → merge → write). Never drop fields this package
+  does not model — an older build must not delete a newer build's data.
+- **No app-specific knowledge.** No app model imports, no hardcoded data-file lists, no localized
+  user-facing strings. App specifics arrive via `DataModule` descriptors and `StorageAdapter`.
 - Lints: `flutter_lints` baseline (`analysis_options.yaml`), no custom overrides.
-- License: GPL-3.0 (code originates from the GPL-3.0 apps).
+- License: GPL-3.0 (the code originates from the GPL-3.0 apps).
 
-## Documentation Maintenance
+## Behavior contract
 
-`doc/en-us/` holds this package's documentation: `architecture.md` (what this is, target shape,
-how apps will consume it), `translation-guide.md` (the English-to-Chinese glossary and style
-guide, kept byte-identical across this repo and its siblings MyAnime/MyDay/MyDevice), and
-`functions/` (one page per source file, mirroring `lib/`, listing every declaration).
+This package is consumed by three shipped apps, so treat these as non-negotiable unless the user
+explicitly decides otherwise:
 
-Any change that adds, removes, or changes the behavior/signature of a function must update the
-corresponding page(s) under `doc/en-us/` in the same commit: the per-file page under
-`doc/en-us/functions/`, its `INDEX.md` row, and `architecture.md` if the change affects the
-package's shape or consumption model. Once `doc/zh-cn/` exists, it must mirror `doc/en-us/`
-exactly and gets updated in the same commit too, translated per `translation-guide.md`; new
-terminology goes into the glossary in all four sibling repos, not just this one. Never write the
-real Gitea host in documentation — always `<local_gitea_address>`.
+- The **WebDAV wire format**, remote layout, and `.lock` semantics (60s TTL, 20s heartbeat) are a
+  compatibility contract with builds already in the field.
+- Local formats — `webdav_config.json`, `.sync_base/`, `backups/` bundles and blobs — likewise.
+- Conflicts are **never** silently auto-resolved.
+- Restore disables auto-sync before the first write and re-enables it only if nothing was written.
 
-## Layout (target — see PLAN.md §3.1)
+The full invariant table (I1–I10) and the per-behavior rationale are in `PLAN.md` and
+`docs/feature-matrix.md`. When drift between the apps forces a choice, prefer the unification the
+owner has already approved — see PLAN.md's accepted-unification list — and record any new one there.
 
-`lib/src/` areas: `storage/` (StorageAdapter, atomic I/O), `json/` (generic preservation
-engine), `merge/` (generic `mergeRecords<T>`), `modules/` (DataModule/ModuleRegistry),
-`webdav/` (config, client, lock, sync engine, progress), `sync/` (auto-sync scheduler,
-wake lock), `backup/`, `data/` (ZIP transfer). Public API is exported only through
-`lib/myapps_data.dart`.
+## Remotes and releases
 
-Current implementation status: P2.1-P2.10 are complete. `lib/src/webdav/sync_progress.dart`
-and `lib/src/sync/sync_wake_lock.dart` are byte-identical moves from all three apps;
-`lib/src/json/json_preservation.dart` (schema-driven + flat-map preservation) and
-`lib/src/merge/sync_merge.dart` (generic `mergeRecords<T>`) are exported and unit-tested.
-`lib/src/storage/atomic_io.dart` provides atomic string/byte replacement and optional
-per-owner write serialization. `lib/src/webdav/webdav_config.dart` provides the shared
-`WebDAVConfig`; `lib/src/webdav/upload_lock.dart` provides `WebDAVUploadLock` and
-`UploadSession`; `lib/src/webdav/webdav_client.dart` provides the pure `WebDavClient`
-transport (verbs, auth, retry, remote lock primitives, heartbeat).
-`lib/src/storage/storage_adapter.dart`, `lib/src/modules/data_module.dart`, and
-`lib/src/webdav/sync_engine.dart` provide the app-neutral module registry and complete
-sync/lock/base/image/force orchestration. `lib/src/backup/backup_engine.dart` provides
-the generic backup engine: v2 bundles, sha256 blob store with reference-counted GC,
-retention, guarded daily auto-backup, and validate-before-write v1/v2 restore with the
-I5 auto-sync-disable interplay. `lib/src/data/zip_transfer.dart` provides the
-registry-driven ZIP transfer engine: export of module files plus `images/<basename>`
-with per-app archive prefixes, and a two-phase traversal-safe import standardized on
-MyDay's strict semantics with per-app leniency knobs. `lib/src/sync/auto_sync_scheduler.dart`
-provides the lifecycle-observed, debounced, periodic auto-sync core with the `_syncing` guard,
-in-memory status, reload/status listeners, and app hooks (`isAutoSyncActive`, `runSync`,
-`consumeLocalDataChanged`, `onPeriodicTick`, `onResume`) preserving each app's trigger topology
-and side effects. `test/golden/shared_engines_golden_test.dart` replays the ten P0.2 sync
-scenarios plus backup-v2 and ZIP-export format fixtures against synthetic 1/5/4-module
-MyAnime/MyDay/MyDevice registries. Its 36 package-owned goldens run in verify mode as part of
-the unfiltered CI test command. The Phase 2 implementation gate is complete; tagging and pushing
-the planned pre-integration `v0.9.0` release requires explicit user authorization.
+- `origin` → `<local_gitea_address>` (private Gitea)
+- `github` → `git@github.com:YuanZhe-99/MyApps-DATA.git` (public; app CI fetches the submodule here)
+- Branch: `main`.
+
+**Masking rule:** never commit the real Gitea host or port anywhere — docs, comments, CI,
+`.gitmodules`. Consumers use the relative URL `../MyApps-DATA.git`. Find the real address with
+`git remote -v` when you need it; never write it down.
+
+Release flow: semver, a `CHANGELOG.md` entry, an annotated tag `vX.Y.Z`, pushed to **both** remotes.
+
+**Push here to both remotes before bumping any app's submodule pointer.** A pointer to an unpushed
+commit breaks every other clone and every app's CI. Apps must pin to a tagged commit before an app
+release.
 
 ## Verification
 
-```
-flutter pub get
-flutter analyze
-flutter test
+```bash
+flutter pub get && flutter analyze && flutter test
 ```
 
-CI (`.github/workflows/ci.yml`, GitHub only) runs all three on every push/PR to `main`
-with Flutter 3.44.2 — stricter than the apps on purpose; this is the load-bearing layer.
+CI (`.github/workflows/ci.yml`, GitHub only) runs all three on every push and PR to `main` with
+Flutter 3.44.2 — deliberately stricter than the apps, because this is the shared layer. The golden
+fixtures under `test/golden/` run in **verify** mode by default; to re-record them intentionally,
+pass `--dart-define=GOLDEN_RECORD=true` (literally `true` — `bool.fromEnvironment` treats `1` as
+false and silently stays in verify mode).
 
 ## Never commit
 
-Secrets, WebDAV credentials or test-server configs with real hosts, signing keys, the
-real Gitea address, `pubspec.lock` (library package), or golden files containing
-personal data from the apps.
+Secrets, WebDAV credentials, test-server configs with real hosts, signing keys, the real Gitea
+address, `pubspec.lock` (this is a library package), or golden files containing personal data from
+the apps.

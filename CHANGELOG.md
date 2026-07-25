@@ -1,5 +1,22 @@
 # Changelog
 
+## 1.0.0 - 2026-07-25
+
+First stable release. No engine code changed since `0.9.0` — this tag marks the surface as **proven
+by integration**: all three apps (MyAnime, MyDay, MyDevice) now consume the package, shipped on it in
+their `v1.3.0` releases with green CI on all five platforms, and the old-build/new-build WebDAV
+interop gate passed against a real server.
+
+Integration outcome: ~7,700 lines of duplicated engine code removed across the three apps
+(MyAnime 2,038 / MyDevice ~2,000 / MyDay 3,635), with every existing app test passing unmodified —
+the facade approach held.
+
+- `AGENTS.md` rewritten to contain only agent instructions. Everything describing what the code is or
+  does now lives in `doc/en-us/`, with an explicit reading order (docs → comments → code) and a
+  "docs are the primary artifact" maintenance rule.
+- `doc/en-us/architecture.md` and `doc/en-us/README.md` updated for the completed state, including
+  the per-app integration outcome and which app-specific behaviors deliberately stayed app-side.
+
 ## 0.9.0 - 2026-07-24
 
 Pre-integration release: the complete shared engine surface (PLAN.md Phase 2,

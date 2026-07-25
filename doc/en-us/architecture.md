@@ -2,10 +2,12 @@
 
 ## What this package is
 
-`myapps_data` is a shared Flutter package that will hold the WebDAV sync engine and the
-data-management engine (backup/restore, ZIP import/export, and the plumbing they share) currently
-duplicated, with drift, across three sibling apps: **MyAnime**, **MyDay**, and **MyDevice**. Each
-app currently hand-maintains its own near-identical copies of:
+`myapps_data` is the shared Flutter package holding the WebDAV sync engine and the data-management
+engine (backup/restore, ZIP import/export, and the plumbing they share) for three sibling apps:
+**MyAnime**, **MyDay**, and **MyDevice**.
+
+Until the extraction, each app hand-maintained its own near-identical — and steadily drifting —
+copies of:
 
 ```
 lib/shared/services/webdav_service.dart
@@ -17,8 +19,9 @@ lib/shared/services/backup_service.dart
 lib/shared/services/import_export_service.dart
 ```
 
-This package exists to become the single source of truth for that shared logic, while each app
-keeps its own data models, UI, and app-specific behavior untouched.
+This package is now the single source of truth for that logic. Each app keeps its own data models,
+UI, storage hub, and app-specific merge wrappers; everything shared arrives here. All three apps
+shipped on it in their `v1.3.0` releases, and ~7,700 lines of duplicated engine code left them.
 
 ## Where the real plan lives
 
@@ -39,10 +42,10 @@ checkouts, not inside any git repository). It defines:
 Read `PLAN.md` before doing any structural work in this repository; this document only summarizes
 what a reader of `doc/` needs to know without duplicating that plan.
 
-## Current state (P2.1-P2.10 complete)
+## Current state (complete and in production)
 
-The package scaffold is in place and Phase 2 implementation has started. P2.1 moved two files
-that were verified byte-identical across MyAnime, MyDay, and MyDevice:
+Every engine area below is implemented, unit-tested, and consumed by all three apps. P2.1 moved two
+files that were verified byte-identical across MyAnime, MyDay, and MyDevice:
 
 - `lib/src/webdav/sync_progress.dart`: shared progress phases, immutable progress snapshots, and
   the `ValueListenable` type alias consumed by app UIs.
@@ -88,14 +91,30 @@ P2.2-P2.6 additionally provide:
   listeners, and app hooks (`isAutoSyncActive`, `runSync`, `consumeLocalDataChanged`,
   `onPeriodicTick`, `onResume`) that preserve each app's trigger topology and side effects.
 
-All current APIs are exported from `lib/myapps_data.dart` and covered by focused unit tests. P2.10
-adds 36 package-owned fixtures that run the ten P0.2 sync scenarios plus backup-v2 and ZIP-export
-format checks against synthetic MyAnime (1 module), MyDay (5 modules), and MyDevice (4 modules)
-registries. The unfiltered CI test command verifies these fixtures. The Phase 2 implementation gate
-is complete; the planned `v0.9.0` tag/push remains a separate release action. See
-[functions/INDEX.md](functions/INDEX.md) for the current declaration inventory.
+All APIs are exported from `lib/myapps_data.dart` and covered by focused unit tests. 36 package-owned
+golden fixtures run the ten characterization sync scenarios plus backup-v2 and ZIP-export format
+checks against synthetic MyAnime (1 module), MyDay (5 modules), and MyDevice (4 modules) registries;
+the unfiltered CI test command verifies them. See [functions/INDEX.md](functions/INDEX.md) for the
+current declaration inventory.
 
-## How the three apps will consume this package
+### Integration outcome
+
+All three apps consume this package and shipped on it in `v1.3.0`:
+
+| App | Modules | Engine lines removed | Existing tests |
+|---|---|---|---|
+| MyAnime | 1 | 2,038 | 56/56 pass unmodified |
+| MyDevice | 4 | ~2,000 | 59/59 pass unmodified |
+| MyDay | 5 | 3,635 | 132/132 pass unmodified |
+
+Each app keeps its previous public service APIs as thin facades (`WebDAVService`, `BackupService`,
+`ImportExportService`, `AutoSyncService`), so no app test needed editing. App-specific behavior that
+could not be unified survives as explicit hooks rather than being erased — MyDay's finance
+forced-balance migration (`postMergeTransform`), its whole-file exchange-rate merge, its
+schema-driven preservation (`preUploadTransform`), and its `ReminderService`-driven daily backup;
+MyDevice's `mergeAssignments` and its synthetic `images` backup module.
+
+## How the three apps consume this package
 
 Each app embeds this repository as a git **submodule** at `packages/myapps_data`, using the
 relative URL `../MyApps-DATA.git` (so it resolves against whichever host the app itself was cloned

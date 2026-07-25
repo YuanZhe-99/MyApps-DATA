@@ -1,6 +1,6 @@
 name: myapps_data
 description: Shared WebDAV sync & data-management package for MyAnime/MyDay/MyDevice.
-version: 0.9.0
+version: 1.0.0
 publish_to: 'none'
 
 environment:
