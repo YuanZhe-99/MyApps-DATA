@@ -1,0 +1,137 @@
+=== [0] MKCOL /dav/files/u/MyDevice/ -> 201
+  authorization: <basic-auth>
+=== [1] GET /dav/files/u/MyDevice/.lock -> 404
+  authorization: <basic-auth>
+=== [2] PUT /dav/files/u/MyDevice/.lock -> 201
+  authorization: <basic-auth>
+  content-type: application/octet-stream
+  if-none-match: *
+  body:
+    {
+      "clientId": "<uuid>",
+      "token": "<uuid>",
+      "startedAt": "<timestamp>",
+      "updatedAt": "<timestamp>",
+      "ttlSeconds": 60
+    }
+=== [3] GET /dav/files/u/MyDevice/device_data.json -> 404
+  authorization: <basic-auth>
+=== [4] GET /dav/files/u/MyDevice/.lock -> 200
+  authorization: <basic-auth>
+=== [5] PUT /dav/files/u/MyDevice/.lock -> 204
+  authorization: <basic-auth>
+  content-type: application/octet-stream
+  if-match: "<etag>"
+  body:
+    {
+      "clientId": "<uuid>",
+      "token": "<uuid>",
+      "startedAt": "<timestamp>",
+      "updatedAt": "<timestamp>",
+      "ttlSeconds": 60
+    }
+=== [6] PUT /dav/files/u/MyDevice/device_data.json -> 201
+  authorization: <basic-auth>
+  content-type: application/octet-stream
+  body:
+    {
+      "records": [
+        {
+          "id": "devices-1",
+          "value": "base"
+        }
+      ],
+      "images": []
+    }
+=== [7] GET /dav/files/u/MyDevice/network_data.json -> 404
+  authorization: <basic-auth>
+=== [8] GET /dav/files/u/MyDevice/.lock -> 200
+  authorization: <basic-auth>
+=== [9] PUT /dav/files/u/MyDevice/.lock -> 204
+  authorization: <basic-auth>
+  content-type: application/octet-stream
+  if-match: "<etag>"
+  body:
+    {
+      "clientId": "<uuid>",
+      "token": "<uuid>",
+      "startedAt": "<timestamp>",
+      "updatedAt": "<timestamp>",
+      "ttlSeconds": 60
+    }
+=== [10] PUT /dav/files/u/MyDevice/network_data.json -> 201
+  authorization: <basic-auth>
+  content-type: application/octet-stream
+  body:
+    {
+      "records": [
+        {
+          "id": "networks-1",
+          "value": "base"
+        }
+      ],
+      "images": []
+    }
+=== [11] GET /dav/files/u/MyDevice/dataset_data.json -> 404
+  authorization: <basic-auth>
+=== [12] GET /dav/files/u/MyDevice/.lock -> 200
+  authorization: <basic-auth>
+=== [13] PUT /dav/files/u/MyDevice/.lock -> 204
+  authorization: <basic-auth>
+  content-type: application/octet-stream
+  if-match: "<etag>"
+  body:
+    {
+      "clientId": "<uuid>",
+      "token": "<uuid>",
+      "startedAt": "<timestamp>",
+      "updatedAt": "<timestamp>",
+      "ttlSeconds": 60
+    }
+=== [14] PUT /dav/files/u/MyDevice/dataset_data.json -> 201
+  authorization: <basic-auth>
+  content-type: application/octet-stream
+  body:
+    {
+      "records": [
+        {
+          "id": "datasets-1",
+          "value": "base"
+        }
+      ],
+      "images": []
+    }
+=== [15] GET /dav/files/u/MyDevice/service_data.json -> 404
+  authorization: <basic-auth>
+=== [16] GET /dav/files/u/MyDevice/.lock -> 200
+  authorization: <basic-auth>
+=== [17] PUT /dav/files/u/MyDevice/.lock -> 204
+  authorization: <basic-auth>
+  content-type: application/octet-stream
+  if-match: "<etag>"
+  body:
+    {
+      "clientId": "<uuid>",
+      "token": "<uuid>",
+      "startedAt": "<timestamp>",
+      "updatedAt": "<timestamp>",
+      "ttlSeconds": 60
+    }
+=== [18] PUT /dav/files/u/MyDevice/service_data.json -> 201
+  authorization: <basic-auth>
+  content-type: application/octet-stream
+  body:
+    {
+      "records": [
+        {
+          "id": "services-1",
+          "value": "base"
+        }
+      ],
+      "images": []
+    }
+=== [19] GET /dav/files/u/MyDevice/.lock -> 200
+  authorization: <basic-auth>
+=== [20] DELETE /dav/files/u/MyDevice/.lock -> 204
+  authorization: <basic-auth>
+  if-match: "<etag>"

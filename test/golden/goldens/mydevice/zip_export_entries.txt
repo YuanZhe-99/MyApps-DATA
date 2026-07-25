@@ -1,0 +1,6 @@
+dataset_data.json
+device_data.json
+images/cover1.jpg
+network_data.json
+service_data.json
+archiveName: mydevice_export_<stamp>.zip

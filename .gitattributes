@@ -1,0 +1,11 @@
+# Golden transcripts are compared byte-for-byte by test/golden/request_recorder.dart,
+# and the recorder always writes '\n'. Without this, a checkout on a machine with
+# core.autocrlf=true rewrites them to CRLF and every fixture fails.
+test/golden/goldens/**/*.txt text eol=lf
+
+# Dart sources and the docs the Function Explanation Layer lives in: keep LF so
+# analyze/format output is identical on Windows, macOS, and the Linux CI runner.
+*.dart text eol=lf
+*.md text eol=lf
+*.yaml text eol=lf
+*.yml text eol=lf

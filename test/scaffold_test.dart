@@ -1,14 +1,14 @@
 import 'package:flutter_test/flutter_test.dart';
 
-/// Purpose: Smoke test keeping `flutter test` green in the scaffold so CI is
-/// wired end-to-end before real engine tests land (workspace PLAN.md, P2.10).
+/// Purpose: Keep a minimal package-level smoke assertion alongside focused
+/// engine-area tests so CI wiring remains independently visible.
 /// Inputs: None.
 /// Returns: N/A.
 /// Side effects: None.
-/// Notes: Replace with real suites as engines are extracted; do not delete the
-/// CI test step instead.
+/// Notes: Focused P2.x suites provide behavior coverage; this only confirms the
+/// package-wide test command continues to discover and execute tests.
 void main() {
-  test('scaffold: package test harness runs', () {
+  test('package test harness runs', () {
     expect(1 + 1, 2);
   });
 }

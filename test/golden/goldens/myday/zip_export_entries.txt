@@ -1,0 +1,7 @@
+exchange_rates.json
+finance_data.json
+images/cover1.jpg
+intimacy_data.json
+todo_data.json
+weight_data.json
+archiveName: myday_backup_<stamp>.zip

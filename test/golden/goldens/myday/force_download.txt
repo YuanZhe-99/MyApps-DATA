@@ -1,0 +1,10 @@
+=== [0] GET /dav/files/u/MyDay/todo_data.json -> 200
+  authorization: <basic-auth>
+=== [1] GET /dav/files/u/MyDay/finance_data.json -> 200
+  authorization: <basic-auth>
+=== [2] GET /dav/files/u/MyDay/exchange_rates.json -> 200
+  authorization: <basic-auth>
+=== [3] GET /dav/files/u/MyDay/intimacy_data.json -> 200
+  authorization: <basic-auth>
+=== [4] GET /dav/files/u/MyDay/weight_data.json -> 200
+  authorization: <basic-auth>

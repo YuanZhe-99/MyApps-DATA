@@ -1,0 +1,156 @@
+=== [0] MKCOL /dav/files/u/MyDay/ -> 201
+  authorization: <basic-auth>
+=== [1] GET /dav/files/u/MyDay/.lock -> 404
+  authorization: <basic-auth>
+=== [2] PUT /dav/files/u/MyDay/.lock -> 201
+  authorization: <basic-auth>
+  content-type: application/octet-stream
+  if-none-match: *
+  body:
+    {
+      "clientId": "<uuid>",
+      "token": "<uuid>",
+      "startedAt": "<timestamp>",
+      "updatedAt": "<timestamp>",
+      "ttlSeconds": 60
+    }
+=== [3] GET /dav/files/u/MyDay/.lock -> 200
+  authorization: <basic-auth>
+=== [4] PUT /dav/files/u/MyDay/.lock -> 204
+  authorization: <basic-auth>
+  content-type: application/octet-stream
+  if-match: "<etag>"
+  body:
+    {
+      "clientId": "<uuid>",
+      "token": "<uuid>",
+      "startedAt": "<timestamp>",
+      "updatedAt": "<timestamp>",
+      "ttlSeconds": 60
+    }
+=== [5] PUT /dav/files/u/MyDay/todo_data.json -> 204
+  authorization: <basic-auth>
+  content-type: application/octet-stream
+  body:
+    {
+      "records": [
+        {
+          "id": "todo-1",
+          "value": "force-local"
+        }
+      ],
+      "images": []
+    }
+=== [6] GET /dav/files/u/MyDay/.lock -> 200
+  authorization: <basic-auth>
+=== [7] PUT /dav/files/u/MyDay/.lock -> 204
+  authorization: <basic-auth>
+  content-type: application/octet-stream
+  if-match: "<etag>"
+  body:
+    {
+      "clientId": "<uuid>",
+      "token": "<uuid>",
+      "startedAt": "<timestamp>",
+      "updatedAt": "<timestamp>",
+      "ttlSeconds": 60
+    }
+=== [8] PUT /dav/files/u/MyDay/finance_data.json -> 204
+  authorization: <basic-auth>
+  content-type: application/octet-stream
+  body:
+    {
+      "records": [
+        {
+          "id": "finance-1",
+          "value": "force-local"
+        }
+      ],
+      "images": []
+    }
+=== [9] GET /dav/files/u/MyDay/.lock -> 200
+  authorization: <basic-auth>
+=== [10] PUT /dav/files/u/MyDay/.lock -> 204
+  authorization: <basic-auth>
+  content-type: application/octet-stream
+  if-match: "<etag>"
+  body:
+    {
+      "clientId": "<uuid>",
+      "token": "<uuid>",
+      "startedAt": "<timestamp>",
+      "updatedAt": "<timestamp>",
+      "ttlSeconds": 60
+    }
+=== [11] PUT /dav/files/u/MyDay/exchange_rates.json -> 204
+  authorization: <basic-auth>
+  content-type: application/octet-stream
+  body:
+    {
+      "records": [
+        {
+          "id": "exchangeRates-1",
+          "value": "force-local"
+        }
+      ],
+      "images": []
+    }
+=== [12] GET /dav/files/u/MyDay/.lock -> 200
+  authorization: <basic-auth>
+=== [13] PUT /dav/files/u/MyDay/.lock -> 204
+  authorization: <basic-auth>
+  content-type: application/octet-stream
+  if-match: "<etag>"
+  body:
+    {
+      "clientId": "<uuid>",
+      "token": "<uuid>",
+      "startedAt": "<timestamp>",
+      "updatedAt": "<timestamp>",
+      "ttlSeconds": 60
+    }
+=== [14] PUT /dav/files/u/MyDay/intimacy_data.json -> 204
+  authorization: <basic-auth>
+  content-type: application/octet-stream
+  body:
+    {
+      "records": [
+        {
+          "id": "intimacy-1",
+          "value": "force-local"
+        }
+      ],
+      "images": []
+    }
+=== [15] GET /dav/files/u/MyDay/.lock -> 200
+  authorization: <basic-auth>
+=== [16] PUT /dav/files/u/MyDay/.lock -> 204
+  authorization: <basic-auth>
+  content-type: application/octet-stream
+  if-match: "<etag>"
+  body:
+    {
+      "clientId": "<uuid>",
+      "token": "<uuid>",
+      "startedAt": "<timestamp>",
+      "updatedAt": "<timestamp>",
+      "ttlSeconds": 60
+    }
+=== [17] PUT /dav/files/u/MyDay/weight_data.json -> 204
+  authorization: <basic-auth>
+  content-type: application/octet-stream
+  body:
+    {
+      "records": [
+        {
+          "id": "weight-1",
+          "value": "force-local"
+        }
+      ],
+      "images": []
+    }
+=== [18] GET /dav/files/u/MyDay/.lock -> 200
+  authorization: <basic-auth>
+=== [19] DELETE /dav/files/u/MyDay/.lock -> 204
+  authorization: <basic-auth>
+  if-match: "<etag>"

@@ -1,0 +1,6 @@
+backupFormat: 2
+topLevelKeys: _backupFormat,_imageRefs,exchange_rates.json,finance_data.json,intimacy_data.json,todo_data.json,weight_data.json
+hasImageRefs: true
+imageRefKeys: [images/cover1.jpg]
+dataIsString: todo_data.json=true,finance_data.json=true,exchange_rates.json=true,intimacy_data.json=true,weight_data.json=true
+blobs: <sha256>.jpg

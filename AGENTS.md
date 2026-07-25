@@ -53,6 +53,21 @@ Rules:
 - Lints: `flutter_lints` baseline (`analysis_options.yaml`), no custom overrides.
 - License: GPL-3.0 (code originates from the GPL-3.0 apps).
 
+## Documentation Maintenance
+
+`doc/en-us/` holds this package's documentation: `architecture.md` (what this is, target shape,
+how apps will consume it), `translation-guide.md` (the English-to-Chinese glossary and style
+guide, kept byte-identical across this repo and its siblings MyAnime/MyDay/MyDevice), and
+`functions/` (one page per source file, mirroring `lib/`, listing every declaration).
+
+Any change that adds, removes, or changes the behavior/signature of a function must update the
+corresponding page(s) under `doc/en-us/` in the same commit: the per-file page under
+`doc/en-us/functions/`, its `INDEX.md` row, and `architecture.md` if the change affects the
+package's shape or consumption model. Once `doc/zh-cn/` exists, it must mirror `doc/en-us/`
+exactly and gets updated in the same commit too, translated per `translation-guide.md`; new
+terminology goes into the glossary in all four sibling repos, not just this one. Never write the
+real Gitea host in documentation — always `<local_gitea_address>`.
+
 ## Layout (target — see PLAN.md §3.1)
 
 `lib/src/` areas: `storage/` (StorageAdapter, atomic I/O), `json/` (generic preservation
@@ -60,6 +75,33 @@ engine), `merge/` (generic `mergeRecords<T>`), `modules/` (DataModule/ModuleRegi
 `webdav/` (config, client, lock, sync engine, progress), `sync/` (auto-sync scheduler,
 wake lock), `backup/`, `data/` (ZIP transfer). Public API is exported only through
 `lib/myapps_data.dart`.
+
+Current implementation status: P2.1-P2.10 are complete. `lib/src/webdav/sync_progress.dart`
+and `lib/src/sync/sync_wake_lock.dart` are byte-identical moves from all three apps;
+`lib/src/json/json_preservation.dart` (schema-driven + flat-map preservation) and
+`lib/src/merge/sync_merge.dart` (generic `mergeRecords<T>`) are exported and unit-tested.
+`lib/src/storage/atomic_io.dart` provides atomic string/byte replacement and optional
+per-owner write serialization. `lib/src/webdav/webdav_config.dart` provides the shared
+`WebDAVConfig`; `lib/src/webdav/upload_lock.dart` provides `WebDAVUploadLock` and
+`UploadSession`; `lib/src/webdav/webdav_client.dart` provides the pure `WebDavClient`
+transport (verbs, auth, retry, remote lock primitives, heartbeat).
+`lib/src/storage/storage_adapter.dart`, `lib/src/modules/data_module.dart`, and
+`lib/src/webdav/sync_engine.dart` provide the app-neutral module registry and complete
+sync/lock/base/image/force orchestration. `lib/src/backup/backup_engine.dart` provides
+the generic backup engine: v2 bundles, sha256 blob store with reference-counted GC,
+retention, guarded daily auto-backup, and validate-before-write v1/v2 restore with the
+I5 auto-sync-disable interplay. `lib/src/data/zip_transfer.dart` provides the
+registry-driven ZIP transfer engine: export of module files plus `images/<basename>`
+with per-app archive prefixes, and a two-phase traversal-safe import standardized on
+MyDay's strict semantics with per-app leniency knobs. `lib/src/sync/auto_sync_scheduler.dart`
+provides the lifecycle-observed, debounced, periodic auto-sync core with the `_syncing` guard,
+in-memory status, reload/status listeners, and app hooks (`isAutoSyncActive`, `runSync`,
+`consumeLocalDataChanged`, `onPeriodicTick`, `onResume`) preserving each app's trigger topology
+and side effects. `test/golden/shared_engines_golden_test.dart` replays the ten P0.2 sync
+scenarios plus backup-v2 and ZIP-export format fixtures against synthetic 1/5/4-module
+MyAnime/MyDay/MyDevice registries. Its 36 package-owned goldens run in verify mode as part of
+the unfiltered CI test command. The Phase 2 implementation gate is complete; tagging and pushing
+the planned pre-integration `v0.9.0` release requires explicit user authorization.
 
 ## Verification
 

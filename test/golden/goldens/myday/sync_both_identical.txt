@@ -1,0 +1,31 @@
+=== [0] MKCOL /dav/files/u/MyDay/ -> 201
+  authorization: <basic-auth>
+=== [1] GET /dav/files/u/MyDay/.lock -> 404
+  authorization: <basic-auth>
+=== [2] PUT /dav/files/u/MyDay/.lock -> 201
+  authorization: <basic-auth>
+  content-type: application/octet-stream
+  if-none-match: *
+  body:
+    {
+      "clientId": "<uuid>",
+      "token": "<uuid>",
+      "startedAt": "<timestamp>",
+      "updatedAt": "<timestamp>",
+      "ttlSeconds": 60
+    }
+=== [3] GET /dav/files/u/MyDay/todo_data.json -> 200
+  authorization: <basic-auth>
+=== [4] GET /dav/files/u/MyDay/finance_data.json -> 200
+  authorization: <basic-auth>
+=== [5] GET /dav/files/u/MyDay/exchange_rates.json -> 200
+  authorization: <basic-auth>
+=== [6] GET /dav/files/u/MyDay/intimacy_data.json -> 200
+  authorization: <basic-auth>
+=== [7] GET /dav/files/u/MyDay/weight_data.json -> 200
+  authorization: <basic-auth>
+=== [8] GET /dav/files/u/MyDay/.lock -> 200
+  authorization: <basic-auth>
+=== [9] DELETE /dav/files/u/MyDay/.lock -> 204
+  authorization: <basic-auth>
+  if-match: "<etag>"

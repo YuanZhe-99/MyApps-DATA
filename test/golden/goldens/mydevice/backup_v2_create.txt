@@ -1,0 +1,6 @@
+backupFormat: 2
+topLevelKeys: _backupFormat,_imageRefs,dataset_data.json,device_data.json,network_data.json,service_data.json
+hasImageRefs: true
+imageRefKeys: [images/cover1.jpg]
+dataIsString: device_data.json=true,network_data.json=true,dataset_data.json=true,service_data.json=true
+blobs: <sha256>.jpg
