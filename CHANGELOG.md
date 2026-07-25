@@ -1,5 +1,24 @@
 # Changelog
 
+## 1.0.1 - 2026-07-25
+
+Adds `migrateStorageContents`, used by all three apps when the user changes the custom storage path.
+
+The apps each migrated an **enumerated list** of data files, which had drifted from what they
+actually store. Changing the storage folder stranded `images/`, `.sync_base/`, `backups/`, and — in
+MyAnime and MyDevice — `webdav_config.json`. The worst consequence was silent: losing `.sync_base/`
+means the three-way merge has no base snapshot, so a record deleted on another device is treated as
+"new locally" and **re-uploaded**, resurrecting deletions across every device with no error shown.
+
+The helper is deliberately allowlist-free: it moves everything in the folder except
+`storage_config.json` (which must stay put because it holds the path). A data file added in a future
+release migrates automatically, so the list cannot drift again — the property is pinned by a test.
+
+Safety properties, each covered by a test: copy-then-delete so a failure leaves a duplicate rather
+than a hole; existing destination files win *and* their source copies are left in place rather than
+discarded on a guess; per-entry failures are collected and returned instead of aborting the rest;
+cleanup only ever removes empty directories, never recursive-deletes.
+
 ## 1.0.0 - 2026-07-25
 
 First stable release. No engine code changed since `0.9.0` — this tag marks the surface as **proven

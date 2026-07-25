@@ -20,6 +20,8 @@ export 'src/json/json_preservation.dart';
 export 'src/merge/sync_merge.dart';
 // P2.4: generic atomic file replacement and optional serialized write queue.
 export 'src/storage/atomic_io.dart';
+// Storage-root migration used when the user changes the custom storage path.
+export 'src/storage/storage_migration.dart';
 // P2.5: WebDAV transport client, config, upload lock, and remote file result.
 export 'src/webdav/webdav_config.dart';
 export 'src/webdav/upload_lock.dart';
