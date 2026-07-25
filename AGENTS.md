@@ -69,10 +69,25 @@ Documentation-only commits do not bump versions or create tags.
 
 ## Authoring rules
 
-- **Function Explanation Layer** — every function, method, constructor, getter, and setter carries a
-  structured doc comment immediately above it:
-  `/// Purpose: … / Inputs: … / Returns: … / Side effects: … / Notes: …`.
-  Add it for new declarations; update it in the same change when you edit an existing one.
+**Function Explanation Layer.** Every function, method, significant callback helper, constructor,
+getter, and setter carries a structured comment immediately above it:
+
+- `Purpose: <one short sentence describing what the declaration is responsible for>`
+- `Inputs: <important parameters only; omit obvious ones if trivial>`
+- `Returns: <what the caller receives, or None>`
+- `Side effects: <state changes, file/network/database/UI effects, logging, mutation, or None>`
+- `Notes: <important assumptions, edge cases, invariants, or when the declaration should be used;
+  prefer None when there is nothing special to add>`
+
+Keep each explanation concise. Add one when adding a declaration, and update it in the same change
+when editing an existing one. Use `///` doc comments in Dart.
+
+These comments are the second layer of the [Reading order](#reading-order), so they have to stay
+accurate: an agent that trusts a stale comment will make a wrong change. Still verify important
+behavior in the implementation before relying on a comment for anything load-bearing.
+
+Other conventions:
+
 - **UTC timestamps** for anything compared across devices. Local-time values break sync conflict
   detection.
 - **Pretty-printed JSON** via `JsonEncoder.withIndent('  ')`.
