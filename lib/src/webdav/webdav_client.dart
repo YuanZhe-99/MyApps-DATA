@@ -78,7 +78,7 @@ class RemoteFile {
 /// Pure WebDAV transport client (feature-matrix §A-§D).
 ///
 /// Instance-based internally; app facades keep their static APIs by delegating
-/// to a lazily-built [WebDavClient] singleton (PLAN §3.3).
+/// to a lazily-built [WebDavClient] singleton.
 ///
 /// ## Verbs
 /// [testConnection], [ensureRemoteDir], [ensureRemoteSubDir], [download],

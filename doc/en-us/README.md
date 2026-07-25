@@ -15,18 +15,17 @@ then fix the page.
 
 - [architecture.md](architecture.md) — what this package is, its shape, the state of each engine
   area, and how the three sibling apps consume it.
+- [invariants.md](invariants.md) — the behavior contract: the hard invariants I1–I10, the
+  unification rule, and every accepted unification with its consequence. **Read this before changing
+  sync, backup, or ZIP behavior.**
 - [translation-guide.md](translation-guide.md) — the English-to-Chinese translation guide and
   terminology glossary shared, byte-identical, across all four repos.
 - [functions/INDEX.md](functions/INDEX.md) — the function index: every declaration in `lib/`, with
   links to full per-file documentation.
 
-Two references live outside this tree:
-
-- `docs/feature-matrix.md` (repo root) — the three-way behavioral audit of the apps' original
-  implementations. This is where to look for *why* a shared behavior is the way it is, and which
-  differences were made configurable versus unified.
-- `PLAN.md` at the **workspace root** (a sibling of the app checkouts, not inside any repo) — the
-  extraction plan, the hard invariants I1–I10, and the accepted-unification list.
+One reference lives outside this tree: `docs/feature-matrix.md` at the repo root — the three-way
+behavioral audit of the apps' original implementations. That is where to look for *why* a shared
+behavior is the way it is, and which differences were made configurable versus unified.
 
 ## Current status
 

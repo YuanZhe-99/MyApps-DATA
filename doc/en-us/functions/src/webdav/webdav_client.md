@@ -39,7 +39,7 @@ to the apps' current values (I3).
 
 - **Source:** `lib/src/webdav/webdav_client.dart`.
 - **Purpose:** Pure WebDAV transport client. Instance-based internally; app facades keep their
-  static APIs by delegating to a lazily-built `WebDavClient` singleton (PLAN §3.3). Performs no
+  static APIs by delegating to a lazily-built `WebDavClient` singleton. Performs no
   local filesystem I/O.
 - **Constructor:** `WebDavClient(WebDAVConfig config, {http.Client? httpClient, Duration lockTtl = 60s, Duration heartbeatInterval = 20s, Duration propfindTimeout = 15s, Duration retryDelay = 1s})`.
   When `httpClient` is null, each call creates a fresh `http.Client()` (matching apps' §A8);

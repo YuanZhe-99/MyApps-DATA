@@ -3,7 +3,7 @@
 /// Inputs: None (library declaration only).
 /// Returns: N/A.
 /// Side effects: None.
-/// Notes: Exports are added as engines land (workspace PLAN.md, Phase 2):
+/// Notes: Engine areas, each documented under `doc/en-us/functions/src/`:
 /// storage/ (StorageAdapter, atomic I/O), json/ (preservation engine), merge/
 /// (mergeRecords&lt;T&gt;), modules/ (DataModule, ModuleRegistry), webdav/ (config,
 /// client, upload lock, sync engine, progress), sync/ (auto-sync scheduler, wake

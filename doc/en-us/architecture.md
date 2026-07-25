@@ -23,24 +23,27 @@ This package is now the single source of truth for that logic. Each app keeps it
 UI, storage hub, and app-specific merge wrappers; everything shared arrives here. All three apps
 shipped on it in their `v1.3.0` releases, and ~7,700 lines of duplicated engine code left them.
 
-## Where the real plan lives
+## The behavior contract
 
-The authoritative extraction plan is `PLAN.md` at the workspace root (a sibling of the app
-checkouts, not inside any git repository). It defines:
+Read [invariants.md](invariants.md) before doing any structural work here. It holds:
 
-- The **hard invariants** (I1–I10) that any extraction must preserve — e.g. the WebDAV wire
-  format, lock semantics (60-second TTL, 20-second heartbeat), the rule that restoring a backup
-  disables auto-sync before the first write, and the rule that the real Gitea host is never
-  committed anywhere.
-- The **target package layout** under `lib/src/`: `storage/` (`StorageAdapter`, atomic I/O),
-  `json/` (generic JSON-preservation engine), `merge/` (`mergeRecords<T>`), `modules/`
-  (`DataModule`/`ModuleRegistry`), `webdav/` (config, client, upload lock, sync engine, progress),
-  `sync/` (auto-sync scheduler, wake lock), `backup/` (backup engine), `data/` (ZIP transfer).
-- The phased implementation tasks (drift audit, golden test harness, engine build-out, per-app
-  integration via facades, and release).
+- The **hard invariants** (I1–I10) that this package must preserve — the WebDAV wire format, lock
+  semantics (60-second TTL, 20-second heartbeat), the rule that restoring a backup disables auto-sync
+  before the first write, the facade rule that keeps every app test passing, and the rule that the
+  real Gitea host is never committed anywhere.
+- The **unification rule** and the list of accepted unifications, each with its behavioral
+  consequence.
 
-Read `PLAN.md` before doing any structural work in this repository; this document only summarizes
-what a reader of `doc/` needs to know without duplicating that plan.
+For the per-behavior detail — what each app originally did, and whether the difference became fixed
+or a configurable knob — see `docs/feature-matrix.md` at the repo root.
+
+## Package layout
+
+`lib/src/` is organized by area: `storage/` (`StorageAdapter`, atomic I/O), `json/` (JSON-preservation
+engines), `merge/` (`mergeRecords<T>`), `modules/` (`DataModule`/`ModuleRegistry`), `webdav/` (config,
+client, upload lock, sync engine, progress), `sync/` (auto-sync scheduler, wake lock), `backup/`
+(backup engine), `data/` (ZIP transfer). The public API is exported only through
+`lib/myapps_data.dart`; consumers must not import `src/` paths directly.
 
 ## Current state (complete and in production)
 

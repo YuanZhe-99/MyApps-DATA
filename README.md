@@ -3,23 +3,24 @@
 Shared WebDAV sync & data-management (backup/restore, ZIP import/export) Flutter package
 for **MyAnime**, **MyDay**, and **MyDevice**.
 
-Status: Phase 2 package implementation is complete. P2.1-P2.9 provide shared
-sync-progress and wake-lock helpers, JSON preservation, generic record merging,
-atomic file replacement with optional serialized write queues, the WebDAV
-transport client and generic sync engine (ordered app modules, upload-lock
-lifecycle, base snapshots, conflict finalization, image sync, and force
-operations), the local backup engine (v2 blob store, reference-counted GC,
-retention, guarded daily auto-backup, and validate-before-write v1/v2 restore
-with the auto-sync-disable safety rule), the ZIP transfer engine
-(registry-driven export allowlist, traversal-safe two-phase import, per-app
-strictness knobs), and the auto-sync scheduler (lifecycle/debounce/periodic
-core with app hooks preserving each app's trigger topology and side effects).
-P2.10 adds package-owned request and format goldens for synthetic MyAnime,
-MyDay, and MyDevice registries, covering the P0.2 sync/backup/ZIP scenario
-topology in CI. `v0.9.0` is the pre-integration release of this surface; Phase 3
-wires the submodule and the per-app facades (`PLAN.md` in the local workspace
-root; phases P0-P4).
-Conventions and contributor rules: see [AGENTS.md](AGENTS.md).
+Status: **stable and in production at `v1.0.0`.** All three apps consume this package and shipped on
+it in their `v1.3.0` releases.
+
+The package provides shared sync-progress and wake-lock helpers, JSON preservation, generic record
+merging, atomic file replacement with optional serialized write queues, the WebDAV transport client
+and generic sync engine (ordered app modules, upload-lock lifecycle, base snapshots, conflict
+finalization, image sync, and force operations), the local backup engine (v2 blob store,
+reference-counted GC, retention, guarded daily auto-backup, and validate-before-write v1/v2 restore
+with the auto-sync-disable safety rule), the ZIP transfer engine (registry-driven export allowlist,
+traversal-safe two-phase import, per-app strictness knobs), and the auto-sync scheduler
+(lifecycle/debounce/periodic core with app hooks preserving each app's trigger topology and side
+effects). Package-owned request and format goldens cover synthetic MyAnime, MyDay, and MyDevice
+registries in CI.
+
+- Documentation: [`doc/en-us/`](doc/en-us/) — start at its README.
+- Behavior contract (invariants, accepted unifications): [`doc/en-us/invariants.md`](doc/en-us/invariants.md).
+- Per-behavior audit of the three apps' original implementations: [`docs/feature-matrix.md`](docs/feature-matrix.md).
+- Contributor and agent rules: [AGENTS.md](AGENTS.md).
 
 ## Consuming (apps)
 

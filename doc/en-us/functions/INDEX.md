@@ -2,7 +2,7 @@
 
 Total documented declarations in `lib/`: **215** (Tier A: 215, Tier B: 0).
 
-This index will grow as engine code lands under `lib/src/` per the workspace-root `PLAN.md`. Every
+This index covers every declaration under `lib/src/`. Every
 new source file must gain a row here and its own page under `functions/`, mirroring the source
 path with `lib/` dropped and `.dart` replaced by `.md`.
 

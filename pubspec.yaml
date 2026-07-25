@@ -7,7 +7,7 @@ environment:
   sdk: ^3.11.3
 
 # Dependency policy: this package must never constrain tighter than the three
-# consumer apps (see PLAN.md Appendix B in the workspace root). Do not add
+# consumer apps. Do not add
 # path_provider, file_picker, or shelf here — paths come through StorageAdapter
 # and pickers/UI stay app-side.
 dependencies:

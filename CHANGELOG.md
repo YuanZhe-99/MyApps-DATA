@@ -19,8 +19,8 @@ the facade approach held.
 
 ## 0.9.0 - 2026-07-24
 
-Pre-integration release: the complete shared engine surface (PLAN.md Phase 2,
-tasks P2.1-P2.10). No app consumes it yet; Phase 3 wires the submodule and the
+Pre-integration release: the complete shared engine surface (extraction Phase 2,
+tasks P2.1-P2.10 of the extraction). No app consumes it yet; Phase 3 wires the submodule and the
 per-app facades.
 
 - Added the P2.10 package golden suite: 36 package-owned fixtures replay the

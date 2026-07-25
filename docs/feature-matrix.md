@@ -36,11 +36,16 @@
 
 ---
 
-## 1. PLAN-claim corrections (findings that update PLAN.md)
+> **Note:** this document is the historical three-way audit performed before the extraction. Its
+> references to "PLAN" are to the one-off extraction plan, since retired; the behavior contract it
+> fed into now lives in [`doc/en-us/invariants.md`](doc/en-us/invariants.md). The per-behavior
+> findings below remain authoritative.
+
+## 1. Pre-extraction plan corrections
 
 The PLAN's investigation section (PLAN §1) and P0.1 bullets contain several claims that
 this audit found to be **understated or wrong**. These are recorded so the engine is not
-built on a false premise; PLAN.md is updated in the same change set (see changelog at the
+built on a false premise; the plan was corrected in the same change set (see changelog at the
 bottom of PLAN).
 
 | # | PLAN claim | Audit finding | Impact |
