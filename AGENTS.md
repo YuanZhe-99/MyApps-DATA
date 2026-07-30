@@ -60,7 +60,9 @@ the same commit:
 
 Once `doc/zh-cn/` exists it must mirror `doc/en-us/` exactly — same files, headings, tables, and
 examples — updated in the same commit and translated per `translation-guide.md`. New terminology goes
-into the glossary in **all four** sibling repos, not just this one.
+into `translation-guide.md`: cross-cutting terms into Section 5.1 in **all four** sibling repos,
+app-specific terms into that repo's own Section 5.2. This package is headless, so its Section 5.2
+stays empty.
 
 Prefer putting explanation in `doc/en-us/`. Keep this file limited to agent instructions; if you find
 yourself adding a paragraph here that describes how the code works, it belongs in the docs instead.
