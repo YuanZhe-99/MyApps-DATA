@@ -58,11 +58,13 @@ the same commit:
 - its `INDEX.md` row (including the declaration counts),
 - `architecture.md` when the change affects the package's shape or consumption model.
 
-Once `doc/zh-cn/` exists it must mirror `doc/en-us/` exactly — same files, headings, tables, and
-examples — updated in the same commit and translated per `translation-guide.md`. New terminology goes
-into `translation-guide.md`: cross-cutting terms into Section 5.1 in **all four** sibling repos,
-app-specific terms into that repo's own Section 5.2. This package is headless, so its Section 5.2
-stays empty.
+Every language directory under `doc/` (currently `en-us` and `zh-cn`) mirrors the others exactly —
+same files, headings, tables, and examples. `doc/en-us/` is authoritative: any documentation change
+updates **all** language directories in the same commit, translated per `translation-guide.md`.
+Adding a new language means creating a complete mirror of `doc/en-us/` in the same change. New
+terminology goes into `translation-guide.md`: cross-cutting terms into Section 5.1 in **all four**
+sibling repos, app-specific terms into that repo's own Section 5.2. This package is headless, so its
+Section 5.2 stays empty.
 
 Prefer putting explanation in `doc/en-us/`. Keep this file limited to agent instructions; if you find
 yourself adding a paragraph here that describes how the code works, it belongs in the docs instead.
