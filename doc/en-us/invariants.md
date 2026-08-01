@@ -45,6 +45,6 @@ to the owner, recorded below with its behavioral consequence, and reflected in r
 
 ## Where the per-behavior detail lives
 
-`docs/feature-matrix.md` at the repo root is the three-way audit of the apps' original
+[`feature-matrix.md`](feature-matrix.md) is the historical three-way audit of the apps' original
 implementations — every behavioral point, what each app did, and whether it became `fixed` or a
 `config` knob. Read it before changing anything in the sync, backup, or ZIP engines.

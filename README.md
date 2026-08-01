@@ -19,7 +19,7 @@ registries in CI.
 
 - Documentation: [`doc/en-us/`](doc/en-us/) — start at its README.
 - Behavior contract (invariants, accepted unifications): [`doc/en-us/invariants.md`](doc/en-us/invariants.md).
-- Per-behavior audit of the three apps' original implementations: [`docs/feature-matrix.md`](docs/feature-matrix.md).
+- Per-behavior audit of the three apps' original implementations: [`doc/en-us/feature-matrix.md`](doc/en-us/feature-matrix.md).
 - Contributor and agent rules: [AGENTS.md](AGENTS.md).
 
 ## Consuming (apps)

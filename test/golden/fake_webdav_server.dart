@@ -4,7 +4,7 @@
 /// Side effects: Mutates an in-memory file map; records nothing itself (pair with
 /// `RequestRecorder`). Fault-injection hooks simulate 404/5xx/timeouts/stale locks.
 /// Notes: Byte-faithful to the spec captured from the apps' `webdav_service.dart`
-/// (see MyApps-DATA docs/feature-matrix.md §A-§D). Not a network server; intercepts
+/// (see MyApps-DATA doc/en-us/feature-matrix.md §A-§D). Not a network server; intercepts
 /// `package:http` calls through the zone-scoped client factory.
 library;
 

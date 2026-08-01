@@ -31,7 +31,7 @@ disagree on something you are about to change — verify, then fix the docs.
 | What does this file/function do | `doc/en-us/functions/<mirrored path>.md` |
 | Which page covers which source file | `doc/en-us/functions/INDEX.md` |
 | The behavior contract: invariants I1–I10, accepted unifications | `doc/en-us/invariants.md` |
-| Why a behavior is the way it is, per app | `docs/feature-matrix.md` (the three-way audit) |
+| Why a behavior is the way it is, per app | `doc/en-us/feature-matrix.md` (the historical three-way audit) |
 | English→Chinese terminology | `doc/en-us/translation-guide.md` |
 
 ## Required workflow
@@ -114,7 +114,7 @@ explicitly decides otherwise:
 - Restore disables auto-sync before the first write and re-enables it only if nothing was written.
 
 The full invariant table (I1–I10) is in `doc/en-us/invariants.md`; the per-behavior rationale is in
-`docs/feature-matrix.md`. When drift between the apps forces a choice, follow the unification rule in
+`doc/en-us/feature-matrix.md`. When drift between the apps forces a choice, follow the unification rule in
 `invariants.md`: prefer unifying over adding a knob, flag it to the owner, and record the accepted
 change and its consequence in that file's table.
 

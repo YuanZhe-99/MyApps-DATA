@@ -1,11 +1,11 @@
 # Feature Matrix - Three-way drift audit of the shared services
 
-> **Purpose:** the per-behavior reference for PLAN task **P0.1**. For every behavioral
-> point in the WebDAV sync + data-management services, this records what each of
-> **MyAnime**, **MyDay**, **MyDevice** does today and whether the shared engine must
-> make it **`fixed`** (identical everywhere -> one shared implementation) or
-> **`config`** (a per-app knob, named here). This is the foundation that lets Phase 2
-> build the package with **zero functional change** (PLAN invariants I1-I10).
+> **Purpose:** this is the historical per-behavior reference for the extraction audit
+> completed on 2026-07-23. It records what the **pre-extraction** implementations in
+> **MyAnime**, **MyDay**, and **MyDevice** did at that audit baseline, and whether each
+> difference was reconciled as **`fixed`** (one shared implementation) or **`config`**
+> (a named per-app knob). It explains the origin of the shared package's behavior; it is
+> not a description of the current app-side facades.
 >
 > **Scope:** the nine shared-service files diffed across the three apps:
 > `webdav_service.dart`, `sync_merge.dart`, `sync_progress.dart`, `sync_wake_lock.dart`,
@@ -15,13 +15,17 @@
 > `C:\Users\yuanzhe\source\repos\{MyAnime,MyDay,MyDevice}` via `git diff --no-index`,
 > SHA-256 hashing, and full-file reads.
 >
-> **Line references** are `file:line` (e.g. `webdav_service.dart:583`) and are relative
-> to each app's `lib/shared/services/` (or `lib/shared/utils/` for the preservation
-> files) unless a full path is given.
+> **Line references** are `file:line` (e.g. `webdav_service.dart:583`) into the
+> pre-extraction snapshots of each app. They are relative to each app's
+> `lib/shared/services/` (or `lib/shared/utils/` for the preservation files) unless a
+> full path is given. The current app files are compatibility facades, so a cited line
+> may no longer resolve or may now contain different code; use the current shared-package
+> source, tests, and `doc/en-us/` pages for present-day behavior.
 >
-> **How to read a row:** `Verdict` is `fixed` (one shared impl, no knob) or
-> `config` (per-app knob - the knob name follows). Where a row is `fixed` but the apps
-> currently differ in a *fixable* way, the reconciliation target is stated.
+> **How to read a row:** `Verdict` is `fixed` (one shared implementation, no knob) or
+> `config` (a per-app knob - the knob name follows). Where a row was `fixed` but the
+> apps differed in a *fixable* way at the audit baseline, the reconciliation target is
+> stated.
 
 ---
 
@@ -38,15 +42,30 @@
 
 > **Note:** this document is the historical three-way audit performed before the extraction. Its
 > references to "PLAN" are to the one-off extraction plan, since retired; the behavior contract it
-> fed into now lives in [`doc/en-us/invariants.md`](doc/en-us/invariants.md). The per-behavior
-> findings below remain authoritative.
+> fed into now lives in [`invariants.md`](invariants.md). The per-behavior findings below remain
+> the historical rationale; current package behavior is governed by the contract and current
+> implementation documentation.
+
+## Current validation (2026-08-01)
+
+The audit remains valid as historical rationale for the extracted package. Before moving this
+page, the following checks were made against the current repositories:
+
+| Check | Result |
+|---|---|
+| Implementation changes after the audit baseline | No shared-package or app-engine implementation commits were found after 2026-07-23; later changes are documentation, submodule-pointer, or mirror updates. |
+| Current app source layout | The three app service files now contain compatibility facades over `myapps_data`; the old `file:line` citations therefore refer to the pre-extraction history, as stated above. |
+| Current shared-package behavior | The package still exposes the matrix's named knobs and extracted areas; `test/sync_merge_test.dart` covers the E4 deletion matrix, and the WebDAV, backup, ZIP, and golden tests cover the corresponding compatibility behavior. |
+| Current contract | The active compatibility rules are recorded in [`invariants.md`](invariants.md); this page explains the app-to-package decisions that led to them. |
+
+This validation does not reinterpret historical app behavior as current app source. It confirms that
+the extracted implementation and its tests still reflect the decisions recorded below.
 
 ## 1. Pre-extraction plan corrections
 
-The PLAN's investigation section (PLAN §1) and P0.1 bullets contain several claims that
+The one-off extraction plan's investigation section (PLAN §1) and P0.1 bullets contained several claims that
 this audit found to be **understated or wrong**. These are recorded so the engine is not
-built on a false premise; the plan was corrected in the same change set (see changelog at the
-bottom of PLAN).
+built on a false premise; the corrections were applied while the shared package was extracted.
 
 | # | PLAN claim | Audit finding | Impact |
 |---|---|---|---|
@@ -176,8 +195,9 @@ MyDevice `:127-146`:
 | Both added same id (no base) | LWW by `modifiedAt` (ties -> remote) | No |
 
 **Key rule:** delete-vs-modify is **never a conflict** - the modified side silently wins.
-This must be covered by dedicated tests in P2.3 before any engine code. The only prose
-mention today is MyDay `sync_merge.dart:59-60`.
+This behavior is covered by the shared merge tests in `test/sync_merge_test.dart`; the table
+records the extraction-time rationale rather than a pending P2.3 task. The MyDay line reference
+above points to the pre-extraction implementation.
 
 ---
 
@@ -186,7 +206,7 @@ mention today is MyDay `sync_merge.dart:59-60`.
 | # | Point | MyAnime | MyDay | MyDevice | Verdict |
 |---|---|---|---|---|---|
 | F1 | preservation style | baked into models: `extraJson` + `withPreservedUnknownJson` + `_mergeJsonMaps` (e.g. `anime.dart:377,775-814`) | schema-driven engine `JsonPreservation` (`json_preservation.dart:1-251` generic; `:252-619` app schemas) | model `extraJson` + `mergeUnknownFields`/`mergeUnknownFieldsFrom` (`json_preservation.dart` 81 lines, generic only) | **config** - package exports BOTH: (a) `mergeUnknownFields` callback on `mergeRecords` (MyDevice pattern, for model-level `extraJson` apps); (b) MyDay's generic `JsonPreservation` engine (lines 1-251) as `lib/src/json/json_preservation.dart` for schema-driven re-injection. App schemas stay app-side. |
-| F2 | merge self-sufficient for preservation? | yes (per-record `withPreservedUnknownJson`) | **no** - merge operates on typed objects, unknowns lost at merge; re-injected at write time by `webdav_service._preserveUnknownJson` (`:614-628`) | yes (`mergeUnknownFields` callback) | **config/behavior** - MyDay's gap must be closed: either add `extraJson` to MyDay models (P3.MyDay.2 [B]) or always apply `JsonPreservation` inside the `DataModule.merge` callback. Engine must not assume self-sufficiency. |
+| F2 | merge self-sufficient for preservation? | yes (per-record `withPreservedUnknownJson`) | **no** - merge operates on typed objects, unknowns lost at merge; re-injected at write time by `webdav_service._preserveUnknownJson` (`:614-628`) | yes (`mergeUnknownFields` callback) | **config/behavior** - preservation remains app-side: MyDay re-applies its schemas at write time, while MyAnime/MyDevice use model-level callbacks. The extracted engine does not assume merge is self-sufficient. |
 | F3 | round-trip survival (parse->merge->write) | full | full (only via the write-time re-injection) | full | **fixed** (I6 holds today; preserve) |
 | F4 | MyDay generic engine API | n/a | `JsonListPreservation`, `JsonPreservationSchema`, `JsonPreservation` (static: `encodeForFile`, `preserveJsonString`, `preserve`, `_preserveOne`, ...) | n/a | **fixed** - move lines 1-251 verbatim to package; app schemas (`_todoDataSchema` etc.) stay app-side |
 | F5 | MyDevice preservation API | n/a | n/a | `unknownJsonFields`, `mergeUnknownJsonFields`, `jsonValueEquals` (`:8,21,64`) | **fixed** - move to package (overlaps with F1(b)) |
@@ -199,7 +219,7 @@ mention today is MyDay `sync_merge.dart:59-60`.
 |---|---|---|---|---|---|
 | G1 | `sync()` step order | ensureRemoteDir -> getAppDir -> loadClientId -> prepareInterruptedUpload -> **acquire lock** -> per-file download/migrate/merge/upload -> image sync -> release lock (`:1252`) | identical (`:1471`) | identical (`:1276`) | **fixed** (lock acquired BEFORE downloads; preserve) |
 | G2 | `autoResolve` at sync | default `false`, no caller overrides (`:1254`) | identical (`:1473`) | identical (`:1278`) | **fixed** (I4) |
-| G3 | download-error handling | **aborts whole sync** (`:1355`) | per-file `perFileErrors.add` + `continue` (`:1582`) | per-file (`:1384`) | **config** - knob `failFastOnDownloadError` (default `false`; MyAnime currently true but single-module so low-impact). Reconcile MyAnime to per-file. |
+| G3 | download-error handling | **aborts whole sync** (`:1355`) | per-file `perFileErrors.add` + `continue` (`:1582`) | per-file (`:1384`) | **config** - knob `failFastOnDownloadError` (package default `false`; MyAnime was `true` at the audit baseline but had one module). The extracted facades use the package default. |
 | G4 | per-file merge try/catch | none (single file) | `try{switch(name){...}}catch(e){perFileErrors.add('$name: $e')}` (`:1644-1851`) | identical (`:1438-1641`) | **fixed** - generalize per-file guard |
 | G5 | top-level catch format | `'$e\n$st'` (stack trace) (`:1495`) | `e.toString()` (no trace) (`:1895`) | `'$e\n$st'` (`:1684`) | **fixed** - unify on stack-trace form (reconcile MyDay) |
 | G6 | per-file error string | n/a (single file) | `'$name: $e'` | `'$name: $e'` | **fixed** |
@@ -321,7 +341,7 @@ mention today is MyDay `sync_merge.dart:59-60`.
 | K3 | cleanup on failure | BackupService yes; AnimeStorage **no** (orphans tmp) | yes | yes | **fixed** - cleanup-on-failure always |
 | K4 | error wrap | none | `FileSystemException('Failed to replace file safely: $e', file.path)` | none | **fixed** - adopt MyDay's `FileSystemException` wrap |
 | K5 | fsync | none (flush only) | none | none | **fixed** (preserve; optional future `fsync` bool, default false) |
-| K6 | `DeviceStorage.save()` atomic? | n/a | n/a | **NO** - plain `writeAsString` (`device_storage.dart:240`) | **behavior** - make `DeviceStorage.save()` atomic (durability gap to fix in P3.MyDevice) |
+| K6 | `DeviceStorage.save()` atomic? | n/a | n/a | **NO** - plain `writeAsString` (`device_storage.dart:240`) | **behavior** - remains an app-side durability gap outside this package; the extracted package's `StorageAdapter` does not silently change `DeviceStorage.save()` semantics. |
 | K7 | per-storage write queue | no (AnimeStorage fixed-tmp hazard) | yes (`TodoStorage._writeQueue` serializes saves, `:141`) | no | **config** - optional per-file write queue (MyDay pattern); at minimum fix AnimeStorage's fixed-tmp |
 | K8 | validation dispatch (pre-write) | inline `AnimeData.fromJson` in restore (`:391`) | centralized `DataFileSafety.validateDataJson` (switch on fileName, typed `DataFileValidationException`) (`:53-76`) | `BackupService._validateModuleJson` (switch, `FormatException`) (`:126-140`) | **fixed** - `DataModule.validate(String)` interface; reuse MyDay's typed `DataFileValidationException` |
 | K9 | validation shared with save path? | no | yes (TodoStorage._saveNow -> writeValidatedDataJson) | no (save unvalidated + non-atomic) | **behavior** - route data saves through `validate`+`atomicWrite` (MyDay pattern) |
@@ -493,6 +513,7 @@ explicitly raised are answered; no new unknowns block Phase 2):
   `C:\Users\yuanzhe\source\repos\{MyAnime,MyDay,MyDevice}` (HEAD as of 2026-07-23).
 - Every row is marked `fixed` or `config`; every `config` row names its knob (§O).
 - Open questions: zero (§P).
-- This file is the input to P2.5 (WebDAV client superset), P2.3 (merge deletion tests),
-  P2.6 (sync engine), P2.7 (backup engine), P2.8 (ZIP transfer), and the P0.2 golden
-  harness scenarios.
+- This audit informed the extracted P2.5 (WebDAV client), P2.3 (merge), P2.6 (sync),
+  P2.7 (backup), P2.8 (ZIP), and P0.2 golden-harness implementations. The current
+  behavior is verified by the package source and tests rather than by rerunning the
+  retired extraction plan.

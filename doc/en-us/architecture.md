@@ -35,7 +35,7 @@ Read [invariants.md](invariants.md) before doing any structural work here. It ho
   consequence.
 
 For the per-behavior detail — what each app originally did, and whether the difference became fixed
-or a configurable knob — see `docs/feature-matrix.md` at the repo root.
+or a configurable knob — see [feature-matrix.md](feature-matrix.md).
 
 ## Package layout
 
