@@ -44,7 +44,7 @@
   - `testConnection()` — PROPFIND Depth:0，10 秒超时，对 207 或 404 返回 `true`（§A9–A10）。
   - `ensureRemoteDir()` — 在基础路径上 MKCOL，10 秒超时，吞掉所有错误（§A11）。
   - `ensureRemoteSubDir(String name)` — 在子目录上 MKCOL（§A12）。
-  - `download(String name)` — GET，30 秒超时，5xx 重试，返回 `RemoteFile`（§A15/D5–D6）。
+  - `download(String name)` — GET，30 秒超时，5xx 重试，返回 `RemoteFile`（§A15/D5–D6）。响应体从 `bodyBytes` 按 UTF-8 解码，绝不经由 `response.body`：响应不带 charset 时 `package:http` 会回退到 latin1，而服务器对 `application/json` 与 `application/octet-stream` 常常不发送 charset，这会在下载途中损坏每个非 ASCII 的记录 id 或字段。不是有效 UTF-8 的响应体会抛出并被报告为下载失败，而不是以乱码写入磁盘。
   - `upload(name, content, {ifMatchEtag, ifNoneMatchAll, retries = 2})` — PUT 字符串，30 秒超时，返回 `({is412, error})`，412 时带 `'conditional WebDAV PUT failed (HTTP 412)'`（§A13）。
   - `uploadBytes(name, bytes)` — PUT 二进制，120 秒超时，非 2xx 抛出（§A14）。
   - `downloadBytes(name)` — GET 二进制，120 秒超时，非 200 抛出（§A16）。

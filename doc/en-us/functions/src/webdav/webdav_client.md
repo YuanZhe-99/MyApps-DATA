@@ -59,6 +59,11 @@ to the apps' current values (I3).
   - `ensureRemoteDir()` - MKCOL on the base path, 10s timeout, swallows all errors (§A11).
   - `ensureRemoteSubDir(String name)` - MKCOL on a sub-directory (§A12).
   - `download(String name)` - GET, 30s timeout, retries on 5xx, returns `RemoteFile` (§A15/D5-D6).
+    The body is decoded from `bodyBytes` as UTF-8, never through `response.body`: `package:http`
+    falls back to latin1 when the response carries no charset, which servers commonly omit for
+    `application/json` and `application/octet-stream`, and that corrupts every non-ASCII record id
+    or field on the way down. A body that is not valid UTF-8 throws and is reported as a download
+    failure rather than written to disk as mojibake.
   - `upload(name, content, {ifMatchEtag, ifNoneMatchAll, retries = 2})` - PUT string, 30s timeout,
     returns `({is412, error})` with `'conditional WebDAV PUT failed (HTTP 412)'` on 412 (§A13).
   - `uploadBytes(name, bytes)` - PUT binary, 120s timeout, throws on non-2xx (§A14).

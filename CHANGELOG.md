@@ -1,5 +1,19 @@
 # Changelog
 
+## 1.0.2 - 2026-09-03
+
+Fixes data corruption when a downloaded data file contains non-ASCII text.
+
+`WebDavClient.download` read `response.body`, which `package:http` decodes as latin1 whenever the
+response carries no charset - the common case for `application/json` and
+`application/octet-stream` on WebDAV servers. It now decodes `response.bodyBytes` as UTF-8. A body
+that is not valid UTF-8 throws inside the existing guard and is reported as a download failure,
+which is safer than writing mojibake to disk.
+
+The three existing apps store ASCII record ids and never saw this. MyNihongo keys every progress
+record by kana, so its first golden-transcript run caught it: a downloaded id came back mojibake,
+and force download replaced good local data with the corrupted text.
+
 ## 1.0.1 - 2026-07-25
 
 Adds `migrateStorageContents`, used by all three apps when the user changes the custom storage path.

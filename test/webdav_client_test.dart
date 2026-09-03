@@ -406,6 +406,20 @@ void main() {
       expect(r.etag, isNotNull);
     });
 
+    test('decodes a non-ASCII body as UTF-8, not latin1', () async {
+      // Regression: reading `response.body` let package:http fall back to
+      // latin1 whenever the response carried no charset, which servers
+      // commonly omit. Every non-ASCII record id came back mojibake, and a
+      // force download then overwrote good local data with it.
+      final server = FakeWebDAVServer();
+      const payload = '{"records":[{"id":"kana:あ","note":"日本語"}]}';
+      server.seed('$_basePath/data.json', payload);
+      final client = _client(server);
+      final r = await client.download('data.json');
+      expect(r.status, RemoteFileStatus.found);
+      expect(r.content, payload);
+    });
+
     test('returns notFound on 404 (§D5)', () async {
       final server = FakeWebDAVServer();
       final client = _client(server);

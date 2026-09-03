@@ -322,7 +322,17 @@ class WebDavClient {
         shouldRetry: (r) => r.statusCode >= 500,
       );
       if (response.statusCode == 200) {
-        return RemoteFile.found(response.body, etag: response.headers['etag']);
+        // Decode the bytes as UTF-8 rather than reading `response.body`:
+        // package:http falls back to latin1 when the response carries no
+        // charset, which servers commonly omit for `application/json` and
+        // `application/octet-stream`. Data files are written as UTF-8, so
+        // latin1 would corrupt every non-ASCII record id or field on the way
+        // down. A body that is not valid UTF-8 throws and is reported as a
+        // download failure, which is safer than writing mojibake to disk.
+        return RemoteFile.found(
+          utf8.decode(response.bodyBytes),
+          etag: response.headers['etag'],
+        );
       }
       if (response.statusCode == 404) return const RemoteFile.notFound();
       return RemoteFile.failure('HTTP ${response.statusCode}');
