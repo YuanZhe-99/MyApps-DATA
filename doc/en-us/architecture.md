@@ -3,11 +3,11 @@
 ## What this package is
 
 `myapps_data` is the shared Flutter package holding the WebDAV sync engine and the data-management
-engine (backup/restore, ZIP import/export, and the plumbing they share) for three sibling apps:
-**MyAnime**, **MyDay**, and **MyDevice**.
+engine (backup/restore, ZIP import/export, and the plumbing they share) for four sibling apps:
+**MyAnime**, **MyDay**, **MyDevice**, and **MyNihongo**.
 
-Until the extraction, each app hand-maintained its own near-identical — and steadily drifting —
-copies of:
+The package was extracted from the first three. Until the extraction, each of them hand-maintained
+its own near-identical — and steadily drifting — copies of:
 
 ```
 lib/shared/services/webdav_service.dart
@@ -20,8 +20,9 @@ lib/shared/services/import_export_service.dart
 ```
 
 This package is now the single source of truth for that logic. Each app keeps its own data models,
-UI, storage hub, and app-specific merge wrappers; everything shared arrives here. All three apps
-shipped on it in their `v1.3.0` releases, and ~7,700 lines of duplicated engine code left them.
+UI, storage hub, and app-specific merge wrappers; everything shared arrives here. The three original
+apps shipped on it in their `v1.3.0` releases, and ~7,700 lines of duplicated engine code left them.
+MyNihongo, added afterwards, was built on the package from its first commit and never held a copy.
 
 ## The behavior contract
 
@@ -47,7 +48,7 @@ client, upload lock, sync engine, progress), `sync/` (auto-sync scheduler, wake 
 
 ## Current state (complete and in production)
 
-Every engine area below is implemented, unit-tested, and consumed by all three apps. P2.1 moved two
+Every engine area below is implemented, unit-tested, and consumed by all four apps. P2.1 moved two
 files that were verified byte-identical across MyAnime, MyDay, and MyDevice:
 
 - `lib/src/webdav/sync_progress.dart`: shared progress phases, immutable progress snapshots, and
@@ -102,13 +103,17 @@ current declaration inventory.
 
 ### Integration outcome
 
-All three apps consume this package and shipped on it in `v1.3.0`:
+The three original apps consume this package and shipped on it in `v1.3.0`:
 
 | App | Modules | Engine lines removed | Existing tests |
 |---|---|---|---|
 | MyAnime | 1 | 2,038 | 56/56 pass unmodified |
 | MyDevice | 4 | ~2,000 | 59/59 pass unmodified |
 | MyDay | 5 | 3,635 | 132/132 pass unmodified |
+
+MyNihongo (1 module) is the fourth consumer and the first that was never an extraction source: it
+was built on the package from its first commit, so it removed no engine lines and its facades were
+written as facades rather than reduced to them.
 
 Each app keeps its previous public service APIs as thin facades (`WebDAVService`, `BackupService`,
 `ImportExportService`, `AutoSyncService`), so no app test needed editing. App-specific behavior that
@@ -117,7 +122,7 @@ forced-balance migration (`postMergeTransform`), its whole-file exchange-rate me
 schema-driven preservation (`preUploadTransform`), and its `ReminderService`-driven daily backup;
 MyDevice's `mergeAssignments` and its synthetic `images` backup module.
 
-## How the three apps consume this package
+## How the four apps consume this package
 
 Each app embeds this repository as a git **submodule** at `packages/myapps_data`, using the
 relative URL `../MyApps-DATA.git` (so it resolves against whichever host the app itself was cloned
@@ -134,7 +139,7 @@ effective lockfile. Apps pin to a **tagged** release commit before any app relea
 must be pushed to both remotes (`origin` and `github`) before any app's submodule pointer is
 bumped.
 
-## Conventions inherited from the three apps
+## Conventions inherited from the three source apps
 
 - **Function Explanation Layer**: every function, method, constructor, getter, and setter carries
   a structured `/// Purpose: / Inputs: / Returns: / Side effects: / Notes:` doc comment immediately

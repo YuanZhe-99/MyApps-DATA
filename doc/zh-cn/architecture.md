@@ -2,9 +2,9 @@
 
 ## 本包是什么
 
-`myapps_data` 是共享的 Flutter 包，承载 WebDAV 同步引擎和数据管理引擎（备份/恢复、ZIP 导入/导出，以及它们共享的底层设施），服务于三个姊妹应用：**MyAnime**、**MyDay** 和 **MyDevice**。
+`myapps_data` 是共享的 Flutter 包，承载 WebDAV 同步引擎和数据管理引擎（备份/恢复、ZIP 导入/导出，以及它们共享的底层设施），服务于四个姊妹应用：**MyAnime**、**MyDay**、**MyDevice** 和 **MyNihongo**。
 
-在抽取之前，每个应用都手工维护着自己近乎相同——且不断漂移——的以下文件副本：
+本包是从前三个应用中抽取出来的。在抽取之前，它们每个都手工维护着自己近乎相同——且不断漂移——的以下文件副本：
 
 ```
 lib/shared/services/webdav_service.dart
@@ -16,7 +16,7 @@ lib/shared/services/backup_service.dart
 lib/shared/services/import_export_service.dart
 ```
 
-本包现在是这些逻辑的唯一真实来源。每个应用保留自己的数据模型、UI、存储中枢和应用特有的合并包装器；所有共享内容都汇集到这里。三个应用都在各自的 `v1.3.0` 版本中基于它发布，约 7,700 行重复的引擎代码从它们中移除。
+本包现在是这些逻辑的唯一真实来源。每个应用保留自己的数据模型、UI、存储中枢和应用特有的合并包装器；所有共享内容都汇集到这里。三个原始应用都在各自的 `v1.3.0` 版本中基于它发布，约 7,700 行重复的引擎代码从它们中移除。此后加入的 MyNihongo 从第一个提交起就建立在本包之上，从未持有过副本。
 
 ## 行为契约
 
@@ -33,7 +33,7 @@ lib/shared/services/import_export_service.dart
 
 ## 当前状态（完整并在生产中）
 
-以下每个引擎区域都已实现、经过单元测试，并被三个应用消费。P2.1 移动了两个在 MyAnime、MyDay、MyDevice 间验证为逐字节相同的文件：
+以下每个引擎区域都已实现、经过单元测试，并被四个应用消费。P2.1 移动了两个在 MyAnime、MyDay、MyDevice 间验证为逐字节相同的文件：
 
 - `lib/src/webdav/sync_progress.dart`：共享的进度阶段、不可变的进度快照，以及应用 UI 消费的 `ValueListenable` 类型别名。
 - `lib/src/sync/sync_wake_lock.dart`：引用计数、所有权安全的前台同步唤醒锁。它从不禁用另一个功能拥有的锁，并把插件失败视为尽力而为。
@@ -57,7 +57,7 @@ P2.2–P2.6 还提供：
 
 ### 集成成果
 
-三个应用都消费本包，并在 `v1.3.0` 中基于它发布：
+三个原始应用都消费本包，并在 `v1.3.0` 中基于它发布：
 
 | 应用 | 模块 | 移除的引擎行数 | 既有测试 |
 |---|---|---|---|
@@ -65,9 +65,11 @@ P2.2–P2.6 还提供：
 | MyDevice | 4 | ~2,000 | 59/59 无需修改全部通过 |
 | MyDay | 5 | 3,635 | 132/132 无需修改全部通过 |
 
+MyNihongo（1 模块）是第四个消费者，也是第一个从来不是抽取来源的消费者：它从第一个提交起就建立在本包之上，因此没有移除任何引擎行数，它的门面从一开始就是按门面写的，而不是被削减成门面的。
+
 每个应用把此前的公共服务 API 保留为薄门面（`WebDAVService`、`BackupService`、`ImportExportService`、`AutoSyncService`），所以无需改动任何应用测试。无法统一的应用特有行为以显式钩子而非抹除的方式存活——MyDay 的财务强制余额迁移（`postMergeTransform`）、它的整文件汇率合并、它的模式驱动保留（`preUploadTransform`）和它的 `ReminderService` 驱动每日备份；MyDevice 的 `mergeAssignments` 和它的合成 `images` 备份模块。
 
-## 三个应用如何消费本包
+## 四个应用如何消费本包
 
 每个应用把本仓库作为 git **子模块**嵌入到 `packages/myapps_data`，使用相对 URL `../MyApps-DATA.git`（因此它按应用自身被克隆自的主机——Gitea 或 GitHub——解析），外加一个 pub **路径依赖**：
 
@@ -79,7 +81,7 @@ dependencies:
 
 由于 pub 不锁定路径依赖的内容，子模块提交 SHA 就是实际生效的锁文件。应用在任何应用发布前固定到一个**打了标签**的发布提交；这里的变更必须先推送到两个远程（`origin` 和 `github`），才能提升任何应用的子模块指针。
 
-## 继承自三个应用的约定
+## 继承自三个源应用的约定
 
 - **函数解释层**：每个函数、方法、构造函数、getter 和 setter 的正上方都带一个结构化的 `/// Purpose: / Inputs: / Returns: / Side effects: / Notes:` 文档注释。本文档集把这个注释当作第一手事实来源，对注释未完全覆盖的内容再读实现。
 - 任何跨设备比较的内容都使用 **UTC 时间戳**。
