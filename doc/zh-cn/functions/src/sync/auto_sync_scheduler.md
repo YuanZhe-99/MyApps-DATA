@@ -45,7 +45,7 @@
 
 ## 守卫与状态
 
-`_trySync` 在 `_syncing` 已为 true 时静默跳过（重叠触发被忽略，不浮出为错误）。配置门（`isAutoSyncActive`）在守卫被获取之前运行，因此未配置的尝试绝不会阻塞后续真正的同步。结果只记录在内存中（`lastSuccessAt`/`lastFailureAt`/`lastError`/`hasPendingConflicts`）并扇出给状态监听器；自动同步总是让冲突自动解决保持关闭（H4），把真正的双向冲突记录为可见的待定状态，而不是 LWW。
+`_trySync` 在 `_syncing` 已为 true 时静默跳过（重叠触发被忽略，不浮出为错误）。守卫在等待配置门（`isAutoSyncActive`）之前同步获取，因此配置门待定期间到达的两次触发不会都运行同步（1.0.3）；配置门回答“未启用”时立即释放守卫，因此未配置的尝试绝不会阻塞后续真正的同步。结果只记录在内存中（`lastSuccessAt`/`lastFailureAt`/`lastError`/`hasPendingConflicts`）并扇出给状态监听器；自动同步总是让冲突自动解决保持关闭（H4），把真正的双向冲突记录为可见的待定状态，而不是 LWW。
 
 ## 应用钩子（H5/H6）
 

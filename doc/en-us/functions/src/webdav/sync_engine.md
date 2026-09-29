@@ -75,6 +75,9 @@ Image references are accumulated in registry order, local then remote for each m
 MKCOLs and PROPFINDs `images/`; a listing failure skips the phase with the fixed warning. Otherwise
 it uploads referenced local names missing remotely, then downloads referenced remote names missing
 locally in reference order. Same-name files and orphans are never overwritten or deleted.
+Downloaded images are written with the atomic temp-then-rename helper (1.0.3), so a failed or
+interrupted download never leaves a truncated image that would later look like a valid local copy;
+uploads pass the file bytes to the client without an extra copy.
 
 Force upload falls back to uploading every referenced local image when listing fails. Force
 download is lock-free, downloads only referenced remote images, and reports a fixed warning when

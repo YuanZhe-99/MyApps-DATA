@@ -30,12 +30,16 @@
 | `BackupEngine._enableAutoSyncAfterUntouchedRestore` | 私有方法 | A | 尽力而为地重新启用自动同步。 |
 | `BackupEngine.restoreBackup` | 方法 | A | 先校验后写入的恢复，带 I5 自动同步开关。 |
 | `BackupEngine.deleteBackup` | 方法 | A | 删除捆绑，然后垃圾回收 blob。 |
-| `BackupEngine._cleanOldBackups` | 私有方法 | A | 按龄保留（0 = 永久）。 |
+| `BackupEngine._cleanOldBackups` | 私有方法 | A | 按龄保留（0 = 永久），通过轻量的时间戳/mtime 列表实现。 |
 | `BackupEngine._collectUnreferencedBlobs` | 私有方法 | A | 保守的引用计数 blob GC。 |
 
 ## 捆绑格式（固定，I2/C8）
 
 `createBackup` 写入 `backups/backup_<yyyyMMdd_HHmmss>.json`，恰好包含 `{'_backupFormat': 2}`、每个既存模块文件一个键（注册表顺序，值为该文件原始 JSON 文本字符串），以及只在存在图像时的 `_imageRefs`（`'images/<name>' -> '<sha256><ext>'`）。没有 `createdAt`，也没有 `modules` 字段（更正 C8）。`_images` 是只读的旧 v1 格式。
+
+## 保留
+
+捆绑写入之后，`createBackup` 在自己的 try/catch 内运行保留清理：清理失败不再能把一次成功的备份变成 `null` 结果（1.0.3）。`_cleanOldBackups` 直接列出 `backup_*.json`，按文件名时间戳给每个文件定日期（时间戳格式错误时用 mtime），而不是调用 `listBackups`，因此不会解析任何捆绑——过期的损坏捆绑同样会被删除——并且每次删除相互隔离，一个被锁定的文件不会中止整趟清理。
 
 ## Blob 存储与 GC
 

@@ -150,6 +150,20 @@ class WebDavClient {
   /// created per call (matching apps' §A8) and never closed.
   http.Client _clientForCall() => _injectedClient ?? http.Client();
 
+  /// Purpose: Consume and discard a streamed response body.
+  /// Inputs: [response] the streamed response whose body is not needed.
+  /// Returns: A future completing once the body is drained, fails, or 10s pass.
+  /// Side effects: Reads (and discards) the response byte stream.
+  /// Notes: Internal helper.  An undrained body keeps the underlying socket
+  /// busy, so status-only calls (PROPFIND probe, MKCOL, non-207 listings)
+  /// drain it.  All errors and the timeout are swallowed: the status code has
+  /// already been read and a broken body must not change the outcome.
+  static Future<void> _drainBody(http.StreamedResponse response) async {
+    try {
+      await response.stream.drain<void>().timeout(const Duration(seconds: 10));
+    } catch (_) {}
+  }
+
   // ── URL / auth helpers ──
 
   /// Purpose: Build the full remote URL for [fileName].
@@ -240,7 +254,8 @@ class WebDavClient {
   /// Inputs: None.
   /// Returns: `true` when the server returns HTTP 207 or 404.
   /// Side effects: Performs network I/O.
-  /// Notes: feature-matrix §A9-§A10.  10s timeout (fixed).  Swallows all errors
+  /// Notes: feature-matrix §A9-§A10.  10s timeout (fixed); the response body is
+  /// drained so the connection is released.  Swallows all errors
   /// and returns `false`.  Both 207 (collection exists) and 404 (server
   /// reachable, path absent) count as "reachable" (§A10/C1).
   Future<bool> testConnection() async {
@@ -260,6 +275,7 @@ class WebDavClient {
       final streamed = await client
           .send(request)
           .timeout(const Duration(seconds: 10));
+      await _drainBody(streamed);
       return streamed.statusCode == 207 || streamed.statusCode == 404;
     } catch (_) {
       return false;
@@ -270,8 +286,8 @@ class WebDavClient {
   /// Inputs: None.
   /// Returns: None.
   /// Side effects: Performs network I/O.
-  /// Notes: feature-matrix §A11.  10s timeout.  Swallows all errors including
-  /// 405/409 when the directory already exists.
+  /// Notes: feature-matrix §A11.  10s timeout; the response body is drained.
+  /// Swallows all errors including 405/409 when the directory already exists.
   Future<void> ensureRemoteDir() async {
     try {
       final base = config.serverUrl.endsWith('/')
@@ -281,7 +297,10 @@ class WebDavClient {
       final request = http.Request('MKCOL', url);
       request.headers.addAll(authHeaders());
       final client = _clientForCall();
-      await client.send(request).timeout(const Duration(seconds: 10));
+      final streamed = await client
+          .send(request)
+          .timeout(const Duration(seconds: 10));
+      await _drainBody(streamed);
     } catch (_) {}
   }
 
@@ -289,7 +308,8 @@ class WebDavClient {
   /// Inputs: [name] sub-directory name.
   /// Returns: None.
   /// Side effects: Performs network I/O.
-  /// Notes: feature-matrix §A12.  10s timeout.  Swallows all errors.  URL is
+  /// Notes: feature-matrix §A12.  10s timeout; the response body is drained.
+  /// Swallows all errors.  URL is
   /// built via [remoteFileUrl] (unified form — MyDevice already used this).
   Future<void> ensureRemoteSubDir(String name) async {
     try {
@@ -297,7 +317,10 @@ class WebDavClient {
       final request = http.Request('MKCOL', url);
       request.headers.addAll(authHeaders());
       final client = _clientForCall();
-      await client.send(request).timeout(const Duration(seconds: 10));
+      final streamed = await client
+          .send(request)
+          .timeout(const Duration(seconds: 10));
+      await _drainBody(streamed);
     } catch (_) {}
   }
 
@@ -462,7 +485,8 @@ class WebDavClient {
   /// Returns: `Future<Set<String>?>` — file names, or `null` when the listing
   /// failed (unknown remote state).
   /// Side effects: Performs network I/O.
-  /// Notes: feature-matrix §C-P1-§C-P4/§A18.  Uses [propfindTimeout].  A `null`
+  /// Notes: feature-matrix §C-P1-§C-P4/§A18.  Uses [propfindTimeout]; a non-207
+  /// response body is drained before returning.  A `null`
   /// result means the remote state is unknown; callers must **not** treat it as
   /// an empty directory (would re-upload every referenced image on transient
   /// failure).  Adopts MyDevice's `<(?:\w+:)?href>` regex (§C-P1, most robust)
@@ -480,7 +504,10 @@ class WebDavClient {
             '<?xml version="1.0"?><d:propfind xmlns:d="DAV:"><d:prop><d:resourcetype/></d:prop></d:propfind>';
         return client.send(request).timeout(propfindTimeout);
       }, shouldRetry: (r) => r.statusCode >= 500);
-      if (streamed.statusCode != 207) return null;
+      if (streamed.statusCode != 207) {
+        await _drainBody(streamed);
+        return null;
+      }
 
       final body = await streamed.stream.bytesToString();
       final hrefPattern = RegExp(
@@ -577,7 +604,9 @@ class WebDavClient {
   /// Notes: feature-matrix §B6.  Without a heartbeat, a single PUT slower than
   /// the lock TTL would let another client treat the lock as expired and upload
   /// concurrently.  Heartbeat failures are swallowed: they must never abort a
-  /// transfer that is already in flight.  The [refreshLock] closure is provided
+  /// transfer that is already in flight.  Before returning, a refresh still in
+  /// flight is awaited so it cannot re-create the lock after release.  The
+  /// [refreshLock] closure is provided
   /// by the sync engine (P2.6) which combines remote lock refresh with local
   /// lock-file persistence.
   Future<T> withLockHeartbeat<T>({
@@ -585,21 +614,27 @@ class WebDavClient {
     required Future<T> Function() operation,
   }) async {
     var refreshing = false;
-    final timer = Timer.periodic(heartbeatInterval, (_) async {
+    Future<void>? inFlight;
+    final timer = Timer.periodic(heartbeatInterval, (_) {
       if (refreshing) return;
       refreshing = true;
-      try {
-        await refreshLock();
-      } catch (_) {
-        // Best-effort: the pre-PUT refresh already validated ownership.
-      } finally {
-        refreshing = false;
-      }
+      inFlight = () async {
+        try {
+          await refreshLock();
+        } catch (_) {
+          // Best-effort: the pre-PUT refresh already validated ownership.
+        } finally {
+          refreshing = false;
+        }
+      }();
     });
     try {
       return await operation();
     } finally {
       timer.cancel();
+      // Wait for a refresh that is still running so it cannot re-create the
+      // remote lock after the caller releases it.  It never throws.
+      await inFlight;
     }
   }
 }

@@ -153,13 +153,17 @@ class JsonPreservation {
   /// Inputs: [next], [source], [schema].
   /// Returns: A new map with this source's unknown fields preserved.
   /// Side effects: None.
-  /// Notes: Internal helper used within this file only.
+  /// Notes: Internal helper used within this file only. Copies [next] shallowly:
+  /// callers pass the fresh tree built by [preserve], so nothing is aliased
+  /// with the caller's original input.
   static Map<String, dynamic> _preserveOne({
     required Map<String, dynamic> next,
     required Map<String, dynamic> source,
     required JsonPreservationSchema schema,
   }) {
-    final result = _copyMap(next);
+    // Shallow copy: [next] is always a fresh tree (deep-copied once in
+    // [preserve]) and nested values are replaced, not mutated in place.
+    final result = Map<String, dynamic>.of(next);
 
     for (final entry in schema.objectFields.entries) {
       final nextValue = result[entry.key];
@@ -209,13 +213,14 @@ class JsonPreservation {
   /// Inputs: [next], [source], [schema].
   /// Returns: A new keyed map with per-value unknowns preserved.
   /// Side effects: None.
-  /// Notes: Internal helper used within this file only.
+  /// Notes: Internal helper used within this file only. Shallow copy of [next]
+  /// (see [_preserveOne]).
   static Map<String, dynamic> _preserveKeyedObjects({
     required Map<String, dynamic> next,
     required Map<String, dynamic> source,
     required JsonPreservationSchema schema,
   }) {
-    final result = _copyMap(next);
+    final result = Map<String, dynamic>.of(next);
     for (final entry in result.entries.toList()) {
       final sourceValue = source[entry.key];
       if (entry.value is Map && sourceValue is Map) {
@@ -233,7 +238,8 @@ class JsonPreservation {
   /// Inputs: [next], [source], [listSchema].
   /// Returns: A new list with per-item unknowns preserved.
   /// Side effects: None.
-  /// Notes: Internal helper used within this file only.
+  /// Notes: Internal helper used within this file only. Items without a
+  /// matching source item are returned as-is (already part of the fresh tree).
   static List<dynamic> _preserveListItems({
     required List<dynamic> next,
     required List<dynamic> source,
@@ -252,7 +258,7 @@ class JsonPreservation {
       final itemMap = _stringKeyMap(item);
       final key = itemMap[listSchema.keyField];
       final sourceItem = sourceByKey[key];
-      if (sourceItem == null) return _copyMap(itemMap);
+      if (sourceItem == null) return itemMap;
       return _preserveOne(
         next: itemMap,
         source: sourceItem,

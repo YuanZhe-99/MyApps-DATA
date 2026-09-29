@@ -1,7 +1,7 @@
 # MyApps-DATA Documentation (English)
 
 This is the English documentation tree for the `myapps_data` package — the shared WebDAV-sync and
-data-management engine behind **MyAnime**, **MyDay**, **MyDevice**, and **MyNihongo**. The
+data-management engine behind **MyAnime**, **MyDay**, **MyDevice**, **MyNihongo**, and **MyTranscribe**. The
 Simplified Chinese mirror (`doc/zh-cn/`) is maintained alongside it; see
 [translation-guide.md](translation-guide.md) for the translation and parity rules.
 
@@ -14,7 +14,7 @@ then fix the page.
 ## Contents
 
 - [architecture.md](architecture.md) — what this package is, its shape, the state of each engine
-  area, and how the four sibling apps consume it.
+  area, and how the five sibling apps consume it.
 - [invariants.md](invariants.md) — the behavior contract: the hard invariants I1–I10, the
   unification rule, and every accepted unification with its consequence. **Read this before changing
   sync, backup, or ZIP behavior.**
@@ -33,10 +33,10 @@ barrel `lib/myapps_data.dart`, and documented under `functions/`. Focused unit t
 package-owned golden fixtures cover the shared behavior and the synthetic MyAnime/MyDay/MyDevice
 registry shapes in CI.
 
-All four apps consume this package. MyAnime, MyDay, and MyDevice shipped on it in their `v1.3.0`
+All five apps consume this package. MyAnime, MyDay, and MyDevice shipped on it in their `v1.3.0`
 releases; ~7,700 lines of duplicated engine code left them, and every existing app test passed
 unmodified. MyNihongo was built on the package from its first commit and never carried a copy of the
-engines.
+engines. MyTranscribe (2 modules) is the fifth consumer.
 
 Each new source area must gain a `doc/en-us/functions/` page and the matching Chinese page in the
 same change set.

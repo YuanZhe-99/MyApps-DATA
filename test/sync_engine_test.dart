@@ -987,6 +987,12 @@ void main() {
           4,
         ]);
         expect(await File(p.join(imageDir.path, 'orphan.png')).exists(), false);
+        // Downloads are written atomically: no temp file is left behind.
+        final leftovers = imageDir
+            .listSync()
+            .map((e) => p.basename(e.path))
+            .where((n) => n.contains('.tmp-'));
+        expect(leftovers, isEmpty);
         expect(engine.consumeLocalDataChanged(), true);
       },
     );

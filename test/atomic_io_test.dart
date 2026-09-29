@@ -184,4 +184,51 @@ void main() {
       expect(temporaryFiles(), isEmpty);
     });
   });
+
+  group('temporary file names', () {
+    test(
+      'concurrent unserialized writes to different files never collide',
+      () async {
+        final files = [
+          for (var i = 0; i < 40; i++) File(p.join(tempDir.path, 'f$i.json')),
+        ];
+
+        await Future.wait([
+          for (var i = 0; i < files.length; i++)
+            atomicWriteString(files[i], 'string-$i'),
+          for (var i = 0; i < files.length; i++)
+            atomicWriteBytes(File('${files[i].path}.bin'), [i]),
+        ]);
+
+        for (var i = 0; i < files.length; i++) {
+          expect(await files[i].readAsString(), 'string-$i');
+          expect(await File('${files[i].path}.bin').readAsBytes(), [i]);
+        }
+        expect(temporaryFiles(), isEmpty);
+      },
+    );
+
+    test(
+      'concurrent writes to one path leave one intact result and no temps',
+      () async {
+        // Writers starting in the same microsecond window used to share a temp
+        // name; the per-process sequence number now keeps them apart, so a
+        // loser can no longer clobber another writer's half-written temp.
+        final file = File(p.join(tempDir.path, 'shared.dat'));
+        final results = await Future.wait([
+          for (var i = 0; i < 10; i++)
+            atomicWriteBytes(file, [
+              i,
+            ]).then((_) => true, onError: (_) => false),
+        ]);
+
+        // Rename-over-existing can transiently fail on Windows when another
+        // rename holds the target; what matters is no corruption or leftovers.
+        expect(results.any((ok) => ok), isTrue);
+        final content = await file.readAsBytes();
+        expect(content, hasLength(1));
+        expect(temporaryFiles(), isEmpty);
+      },
+    );
+  });
 }

@@ -266,7 +266,9 @@ class BackupEngine {
   /// Side effects: Writes the bundle JSON atomically, deduplicates images
   /// into `backups/blobs/`, then runs retention cleanup and blob GC.
   /// Notes: Images are stored once per unique content hash; the bundle only
-  /// records `_imageRefs` so repeated backups stay small (§J5/J6/J8).
+  /// records `_imageRefs` so repeated backups stay small (§J5/J6/J8). Once the
+  /// bundle is written, a retention-cleanup failure is swallowed so the new
+  /// file is still returned.
   Future<File?> createBackup() async {
     try {
       final appDir = await storage.getAppDir();
@@ -307,7 +309,11 @@ class BackupEngine {
       final file = File(p.join(backupDir.path, 'backup_$stamp.json'));
       await atomicWriteString(file, content);
 
-      await _cleanOldBackups();
+      try {
+        await _cleanOldBackups();
+      } catch (_) {
+        // Retention is best-effort; the new backup already exists.
+      }
       await _collectUnreferencedBlobs();
       return file;
     } catch (_) {
@@ -655,14 +661,31 @@ class BackupEngine {
   /// Returns: A future completing after cleanup.
   /// Side effects: Deletes expired bundle files.
   /// Notes: Internal helper; runs only inside [createBackup] (retention is
-  /// age-based only, no max-count cap); 0 keeps backups forever (§J11).
+  /// age-based only, no max-count cap); 0 keeps backups forever (§J11). Uses a
+  /// light directory listing (filename stamp, else mtime) instead of
+  /// [listBackups], so no bundle is parsed and corrupt expired bundles are
+  /// removed too. Each delete is isolated: one failure never stops the pass.
   Future<void> _cleanOldBackups() async {
     if (retentionDays <= 0) return;
     final cutoff = _clock().subtract(Duration(days: retentionDays));
-    final backups = await listBackups();
-    for (final b in backups) {
-      if (b.date.isBefore(cutoff)) {
-        await b.file.delete();
+    final backupDir = await _getBackupDir();
+    if (!await backupDir.exists()) return;
+    await for (final entity in backupDir.list()) {
+      if (entity is! File ||
+          !p.basename(entity.path).startsWith('backup_') ||
+          !entity.path.endsWith('.json')) {
+        continue;
+      }
+      try {
+        final name = p.basenameWithoutExtension(entity.path);
+        final date =
+            _parseStamp(name.replaceFirst('backup_', '')) ??
+            (await entity.stat()).modified;
+        if (date.isBefore(cutoff)) {
+          await entity.delete();
+        }
+      } catch (_) {
+        // Best-effort retention: keep going with the remaining bundles.
       }
     }
   }

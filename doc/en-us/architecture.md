@@ -3,8 +3,8 @@
 ## What this package is
 
 `myapps_data` is the shared Flutter package holding the WebDAV sync engine and the data-management
-engine (backup/restore, ZIP import/export, and the plumbing they share) for four sibling apps:
-**MyAnime**, **MyDay**, **MyDevice**, and **MyNihongo**.
+engine (backup/restore, ZIP import/export, and the plumbing they share) for five sibling apps:
+**MyAnime**, **MyDay**, **MyDevice**, **MyNihongo**, and **MyTranscribe**.
 
 The package was extracted from the first three. Until the extraction, each of them hand-maintained
 its own near-identical — and steadily drifting — copies of:
@@ -48,7 +48,7 @@ client, upload lock, sync engine, progress), `sync/` (auto-sync scheduler, wake 
 
 ## Current state (complete and in production)
 
-Every engine area below is implemented, unit-tested, and consumed by all four apps. P2.1 moved two
+Every engine area below is implemented, unit-tested, and consumed by all five apps. P2.1 moved two
 files that were verified byte-identical across MyAnime, MyDay, and MyDevice:
 
 - `lib/src/webdav/sync_progress.dart`: shared progress phases, immutable progress snapshots, and
@@ -115,6 +115,9 @@ MyNihongo (1 module) is the fourth consumer and the first that was never an extr
 was built on the package from its first commit, so it removed no engine lines and its facades were
 written as facades rather than reduced to them.
 
+MyTranscribe (2 modules: settings and transcripts) is the fifth consumer and, like MyNihongo, never
+carried a copy of the engines.
+
 Each app keeps its previous public service APIs as thin facades (`WebDAVService`, `BackupService`,
 `ImportExportService`, `AutoSyncService`), so no app test needed editing. App-specific behavior that
 could not be unified survives as explicit hooks rather than being erased — MyDay's finance
@@ -122,7 +125,7 @@ forced-balance migration (`postMergeTransform`), its whole-file exchange-rate me
 schema-driven preservation (`preUploadTransform`), and its `ReminderService`-driven daily backup;
 MyDevice's `mergeAssignments` and its synthetic `images` backup module.
 
-## How the four apps consume this package
+## How the five apps consume this package
 
 Each app embeds this repository as a git **submodule** at `packages/myapps_data`, using the
 relative URL `../MyApps-DATA.git` (so it resolves against whichever host the app itself was cloned

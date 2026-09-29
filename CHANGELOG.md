@@ -1,5 +1,45 @@
 # Changelog
 
+## 1.0.3 - 2026-09-28
+
+Maintenance release: correctness and performance fixes, with no wire-format or on-disk format
+change. Every golden fixture is byte-identical.
+
+Fixes
+
+- `AutoSyncScheduler`: the `_syncing` guard is now taken before the `isAutoSyncActive()` await.
+  Two triggers arriving while the config gate was pending could both run a sync and record a bogus
+  failure status. A gate answering "inactive" releases the guard immediately.
+- `WebDavClient.withLockHeartbeat` now awaits a refresh that is still in flight before returning,
+  so it cannot re-create the remote `.lock` after the caller has released it. Refresh errors are
+  still swallowed.
+- Downloaded images are written with `atomicWriteBytes` (normal sync and force download), so an
+  interrupted download can no longer leave a truncated image that is later mistaken for a valid
+  local copy.
+- `BackupEngine.createBackup` no longer returns `null` for a backup it just wrote when retention
+  cleanup fails. `_cleanOldBackups` is wrapped separately and now uses a light directory listing
+  (filename stamp, else mtime) with per-file error isolation, so expired corrupt bundles are also
+  removed and one undeletable file no longer stops the pass.
+- Atomic-write temporary names carry a per-process sequence number
+  (`.tmp-<microseconds>-<seq>`), so concurrent writes to one destination cannot share a temp file.
+
+Performance
+
+- Status-only responses (connection probe, `MKCOL`, non-207 listings) are drained through a new
+  private `WebDavClient._drainBody` (10s cap, errors swallowed) so the connection is released.
+- Removed redundant copies: image upload bytes (`Uint8List.fromList`) and ZIP import entry
+  contents (`List<int>.from`).
+- `JsonPreservation.preserve` copies each map level shallowly after one initial deep copy; a
+  byte-equality fixture and a no-aliasing test pin the unchanged output.
+
+Housekeeping
+
+- MyTranscribe is documented as the fifth consumer (README, AGENTS.md, architecture,
+  `pubspec.yaml` description, `tool/bump_shared.ps1` default app list).
+- Tests: removed the smoke scaffold and low-value constructor/getter tests; table-driven the
+  merge change-detection and deletion matrices, unknown-field merge cases, scheduler status cases,
+  and sync-progress tests. New tests cover each fix above.
+
 ## 1.0.2 - 2026-09-03
 
 Fixes data corruption when a downloaded data file contains non-ASCII text.

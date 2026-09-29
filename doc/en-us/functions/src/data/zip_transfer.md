@@ -42,4 +42,5 @@ MyDay's strict form by default:
   true = MyDay); `atomicWrites` selects tmp-then-rename vs plain `writeAsBytes` (M9).
 - Import overwrites inside the app directory only, never triggers re-sync or backup, and runs the
   optional `onAfterImport` hook once after success (M10). No preservation engine is invoked
-  (M15); app validators handle preserved fields.
+  (M15); app validators handle preserved fields. Entry contents are used as decoded, without an
+  extra per-entry copy (1.0.3).

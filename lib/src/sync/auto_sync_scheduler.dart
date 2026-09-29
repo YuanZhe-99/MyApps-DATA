@@ -328,13 +328,15 @@ class AutoSyncScheduler with WidgetsBindingObserver {
   /// Side effects: Calls [runSync], records status, and fires reload
   /// listeners when the local-data-changed flag was set.
   /// Notes: The `_syncing` guard silently skips overlapping triggers (H1).
-  /// The config gate runs before the guard is acquired so a not-configured
-  /// attempt never blocks a later real sync.
+  /// The guard is taken synchronously, before the config-gate await, so two
+  /// triggers arriving while the gate is pending cannot both run a sync. A
+  /// gate that answers "inactive" releases the guard immediately, so a
+  /// not-configured attempt never blocks a later real sync.
   Future<void> _trySync() async {
     if (_syncing) return;
-    if (!await isAutoSyncActive()) return;
     _syncing = true;
     try {
+      if (!await isAutoSyncActive()) return;
       final result = await runSync();
       if (result.hasConflicts) {
         _recordFailure(

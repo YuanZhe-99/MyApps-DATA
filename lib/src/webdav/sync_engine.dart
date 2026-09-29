@@ -898,7 +898,7 @@ class WebDavSyncEngine {
       );
       try {
         final bytes = await client.downloadBytes('$_imagesDirName/$name');
-        await File(p.join(imageDir.path, name)).writeAsBytes(bytes);
+        await atomicWriteBytes(File(p.join(imageDir.path, name)), bytes);
         _localDataChanged = true;
       } on TimeoutException {
         warnings.add('Download timed out: $name');
@@ -961,7 +961,8 @@ class WebDavSyncEngine {
   /// Purpose: Download referenced remote images missing locally.
   /// Inputs: Client, [appDir], [references] from downloaded remote modules.
   /// Returns: Nonfatal download/listing warnings.
-  /// Side effects: Creates local images and downloads missing files.
+  /// Side effects: Creates local images (atomic temp+rename, so a failed
+  /// download never leaves a truncated image) and downloads missing files.
   /// Notes: Force download is lock-free and never overwrites same-name images.
   Future<List<String>> _forceDownloadImages(
     WebDavClient client,
@@ -995,7 +996,7 @@ class WebDavSyncEngine {
       );
       try {
         final bytes = await client.downloadBytes('$_imagesDirName/$name');
-        await File(p.join(imageDir.path, name)).writeAsBytes(bytes);
+        await atomicWriteBytes(File(p.join(imageDir.path, name)), bytes);
         _localDataChanged = true;
       } on TimeoutException {
         warnings.add('Download timed out: $name');
@@ -1281,7 +1282,8 @@ class WebDavSyncEngine {
   }
 
   /// Purpose: Upload image bytes after lock validation and heartbeat refresh.
-  /// Inputs: Client, [appDir], [session], remote [name], [bytes].
+  /// Inputs: Client, [appDir], [session], remote [name], [bytes] (passed to the
+  /// client as-is, no copy).
   /// Returns: A future completing after upload.
   /// Side effects: Refreshes lock and writes remote image bytes.
   /// Notes: A pre-PUT lock error is thrown and rendered as an image warning.
@@ -1290,7 +1292,7 @@ class WebDavSyncEngine {
     Directory appDir,
     UploadSession session,
     String name,
-    List<int> bytes,
+    Uint8List bytes,
   ) async {
     final lockError = await _refreshUploadLock(client, appDir, session);
     if (lockError != null) throw Exception(lockError);
@@ -1298,7 +1300,7 @@ class WebDavSyncEngine {
       refreshLock: () async {
         await _refreshUploadLock(client, appDir, session);
       },
-      operation: () => client.uploadBytes(name, Uint8List.fromList(bytes)),
+      operation: () => client.uploadBytes(name, bytes),
     );
   }
 

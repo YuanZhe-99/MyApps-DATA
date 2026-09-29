@@ -28,6 +28,10 @@ do NOT live here - they stay app-side and are passed in at call time.
 - `preserveJsonString({...})` and `encodeForFile({...})` are string/file conveniences over
   `preserve`; malformed sources are ignored.
 - Known keys always come from `next`; unknown keys come from sources.
+- `preserve` deep-copies `next` once, then the per-level helpers (`_preserveOne`,
+  `_preserveKeyedObjects`, `_preserveListItems`) copy each map level only shallowly (1.0.3): the
+  tree is already fresh and nested values are replaced, not mutated, so the result still shares no
+  mutable structure with `next` or the sources while the cost drops from O(depth x size) to O(size).
 
 ### Flat-map engine (`unknownJsonFields` / `mergeUnknownJsonFields`)
 

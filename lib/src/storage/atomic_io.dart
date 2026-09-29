@@ -4,12 +4,29 @@
 /// Returns: Futures that complete after replacement or report the write error.
 /// Side effects: Creates parent directories, writes same-directory temporary
 /// files, and renames them over destination files.
-/// Notes: P2.4 follows the P0.1 matrix: unique `.tmp-<microseconds>` names,
+/// Notes: P2.4 follows the P0.1 matrix: unique `.tmp-<microseconds>-<seq>` names,
 /// `flush: true`, cleanup on failure, and a `FileSystemException` naming the
 /// destination. No fsync is requested because none of the apps uses it today.
 library;
 
 import 'dart:io';
+
+/// Monotonic per-process counter that keeps temporary names unique even when
+/// two writes to one destination start within the same microsecond.
+int _temporarySequence = 0;
+
+/// Purpose: Build a unique same-directory temporary file for [file].
+/// Inputs: [file] the destination being replaced.
+/// Returns: A `File` named `<dest>.tmp-<microseconds>-<sequence>`.
+/// Side effects: Increments the process-wide temporary-name sequence.
+/// Notes: Internal helper. The trailing sequence number guarantees uniqueness
+/// where the clock alone could repeat; the `.tmp-` marker is unchanged.
+File _temporaryFileFor(File file) {
+  return File(
+    '${file.path}.tmp-${DateTime.now().microsecondsSinceEpoch}'
+    '-${_temporarySequence++}',
+  );
+}
 
 /// Purpose: Atomically replace [file] with UTF-8 [content] through a
 /// same-directory temporary file.
@@ -21,7 +38,7 @@ import 'dart:io';
 /// `FileSystemException` identifies the destination. Serialize concurrent
 /// writes to the same destination with [AtomicWriteQueue].
 Future<void> atomicWriteString(File file, String content) async {
-  final tmp = File('${file.path}.tmp-${DateTime.now().microsecondsSinceEpoch}');
+  final tmp = _temporaryFileFor(file);
   try {
     final parent = file.parent;
     if (!await parent.exists()) {
@@ -48,7 +65,7 @@ Future<void> atomicWriteString(File file, String content) async {
 /// `FileSystemException` identifies the destination. Serialize concurrent
 /// writes to the same destination with [AtomicWriteQueue].
 Future<void> atomicWriteBytes(File file, List<int> bytes) async {
-  final tmp = File('${file.path}.tmp-${DateTime.now().microsecondsSinceEpoch}');
+  final tmp = _temporaryFileFor(file);
   try {
     final parent = file.parent;
     if (!await parent.exists()) {

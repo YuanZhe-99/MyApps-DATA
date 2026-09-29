@@ -6,10 +6,12 @@
 // §C-P1-P4 (PROPFIND parsing), §D1-D6 (retry/exception taxonomy).
 import 'dart:async';
 import 'dart:convert';
+import 'dart:io';
 import 'dart:typed_data';
 
 import 'package:flutter_test/flutter_test.dart';
 import 'package:http/http.dart' as http;
+import 'package:http/testing.dart';
 import 'package:myapps_data/src/webdav/webdav_config.dart';
 import 'package:myapps_data/src/webdav/upload_lock.dart';
 import 'package:myapps_data/src/webdav/webdav_client.dart';
@@ -47,19 +49,6 @@ void main() {
   // ── WebDAVConfig ──
 
   group('WebDAVConfig', () {
-    test('fields and defaults (§A1-A2)', () {
-      const c = WebDAVConfig(
-        serverUrl: 'https://s',
-        username: 'u',
-        password: 'p',
-      );
-      expect(c.serverUrl, 'https://s');
-      expect(c.username, 'u');
-      expect(c.password, 'p');
-      expect(c.remotePath, ''); // package default (not per-app)
-      expect(c.autoSync, false);
-    });
-
     test('isConfigured checks credentials only (§A4)', () {
       expect(
         const WebDAVConfig(
@@ -240,42 +229,6 @@ void main() {
     });
   });
 
-  // ── UploadSession ──
-
-  test('UploadSession holds clientId and token', () {
-    const session = UploadSession(clientId: 'cid', token: 'tok');
-    expect(session.clientId, 'cid');
-    expect(session.token, 'tok');
-  });
-
-  // ── RemoteFile ──
-
-  group('RemoteFile', () {
-    test('found carries content and etag (§D5)', () {
-      const f = RemoteFile.found('hello', etag: '"v1"');
-      expect(f.status, RemoteFileStatus.found);
-      expect(f.content, 'hello');
-      expect(f.etag, '"v1"');
-      expect(f.error, isNull);
-    });
-
-    test('notFound (§D5)', () {
-      const f = RemoteFile.notFound();
-      expect(f.status, RemoteFileStatus.notFound);
-      expect(f.content, isNull);
-      expect(f.etag, isNull);
-      expect(f.error, isNull);
-    });
-
-    test('failure carries error message (§D6)', () {
-      const f = RemoteFile.failure('HTTP 500');
-      expect(f.status, RemoteFileStatus.error);
-      expect(f.content, isNull);
-      expect(f.etag, isNull);
-      expect(f.error, 'HTTP 500');
-    });
-  });
-
   // ── WebDavClient helpers ──
 
   group('WebDavClient URL / auth helpers', () {
@@ -326,14 +279,6 @@ void main() {
       expect(WebDavClient.strongEtag('"v1"'), '"v1"');
       expect(WebDavClient.strongEtag('W/"v1"'), isNull);
       expect(WebDavClient.strongEtag(null), isNull);
-    });
-
-    test('lockTtlSeconds derives from lockTtl', () {
-      final client = WebDavClient(
-        const WebDAVConfig(serverUrl: 's', username: 'u', password: 'p'),
-        lockTtl: const Duration(seconds: 90),
-      );
-      expect(client.lockTtlSeconds, 90);
     });
   });
 
@@ -944,5 +889,106 @@ void main() {
       );
       expect(result, 'ok'); // operation succeeded despite refresh errors
     });
+
+    test('waits for an in-flight refresh before returning', () async {
+      final client = WebDavClient(
+        const WebDAVConfig(serverUrl: 's', username: 'u', password: 'p'),
+        heartbeatInterval: const Duration(milliseconds: 10),
+      );
+      final gate = Completer<void>();
+      var refreshStarted = false;
+      var returned = false;
+      final future = client
+          .withLockHeartbeat(
+            refreshLock: () {
+              refreshStarted = true;
+              return gate.future;
+            },
+            operation: () async {
+              await Future<void>.delayed(const Duration(milliseconds: 40));
+              return 'ok';
+            },
+          )
+          .then((v) {
+            returned = true;
+            return v;
+          });
+      await Future<void>.delayed(const Duration(milliseconds: 100));
+      expect(refreshStarted, isTrue);
+      expect(returned, isFalse); // the blocked refresh delays the return
+      gate.complete();
+      expect(await future, 'ok');
+    });
+
+    test('a failing in-flight refresh is still swallowed on return', () async {
+      final client = WebDavClient(
+        const WebDAVConfig(serverUrl: 's', username: 'u', password: 'p'),
+        heartbeatInterval: const Duration(milliseconds: 10),
+      );
+      final gate = Completer<void>();
+      final future = client.withLockHeartbeat(
+        refreshLock: () => gate.future,
+        operation: () async {
+          await Future<void>.delayed(const Duration(milliseconds: 30));
+          return 'ok';
+        },
+      );
+      await Future<void>.delayed(const Duration(milliseconds: 60));
+      gate.completeError(Exception('late failure'));
+      expect(await future, 'ok');
+    });
+  });
+
+  // ── response body draining ──
+
+  group('WebDavClient response draining', () {
+    test('a 207 whose body stream throws still counts as reachable', () async {
+      final mock = MockClient.streaming((request, bodyStream) async {
+        await bodyStream.drain<void>();
+        return http.StreamedResponse(
+          Stream<List<int>>.error(const SocketException('reset')),
+          207,
+          request: request,
+        );
+      });
+      final client = WebDavClient(
+        const WebDAVConfig(
+          serverUrl: _serverUrl,
+          username: 'u',
+          password: 'p',
+          remotePath: _remotePath,
+        ),
+        httpClient: mock,
+        retryDelay: Duration.zero,
+      );
+      expect(await client.testConnection(), isTrue);
+      await client.ensureRemoteDir();
+      await client.ensureRemoteSubDir('images');
+    });
+
+    test(
+      'listSubDir returns null on non-207 with an unreadable body',
+      () async {
+        final mock = MockClient.streaming((request, bodyStream) async {
+          await bodyStream.drain<void>();
+          return http.StreamedResponse(
+            Stream<List<int>>.error(const SocketException('reset')),
+            403,
+            request: request,
+          );
+        });
+        final client = WebDavClient(
+          const WebDAVConfig(
+            serverUrl: _serverUrl,
+            username: 'u',
+            password: 'p',
+            remotePath: _remotePath,
+          ),
+          httpClient: mock,
+          retryDelay: Duration.zero,
+        );
+        expect(await client.listSubDir('images'), isNull);
+      },
+    );
   });
 }

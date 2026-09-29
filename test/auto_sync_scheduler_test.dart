@@ -121,11 +121,69 @@ void main() {
     },
   );
 
+  test(
+    'two triggers while the config gate is pending run exactly one sync',
+    () {
+      FakeAsync().run((async) {
+        var syncCalls = 0;
+        final s = AutoSyncScheduler(
+          // The gate takes time to answer, so both triggers arrive before
+          // either has had a chance to acquire the syncing guard.
+          isAutoSyncActive: () async {
+            await Future<void>.delayed(const Duration(milliseconds: 10));
+            return true;
+          },
+          runSync: () async {
+            syncCalls++;
+            return const AutoSyncResult(success: true);
+          },
+          consumeLocalDataChanged: () => false,
+        );
+
+        s.requestSyncNow();
+        s.requestSyncNow();
+        async.elapse(const Duration(milliseconds: 50));
+        async.flushMicrotasks();
+
+        expect(syncCalls, 1);
+        expect(s.lastError, isNull);
+        s.stop();
+      });
+    },
+  );
+
+  test('an inactive config gate releases the guard for a later trigger', () {
+    FakeAsync().run((async) {
+      var active = false;
+      var syncCalls = 0;
+      final s = AutoSyncScheduler(
+        isAutoSyncActive: () async => active,
+        runSync: () async {
+          syncCalls++;
+          return const AutoSyncResult(success: true);
+        },
+        consumeLocalDataChanged: () => false,
+      );
+
+      s.requestSyncNow();
+      async.flushMicrotasks();
+      expect(syncCalls, 0);
+
+      active = true;
+      s.requestSyncNow();
+      async.flushMicrotasks();
+      expect(syncCalls, 1);
+      s.stop();
+    });
+  });
+
   test('notifySaved debounces 30s to a single trailing sync', () {
     final h = _Hooks();
     final s = _scheduler(h);
-    s.start();
     FakeAsync().run((async) {
+      s.start();
+      async.flushMicrotasks();
+      h.syncCalls = 0;
       s.notifySaved();
       s.notifySaved();
       s.notifySaved();
@@ -207,48 +265,59 @@ void main() {
     s.stop();
   });
 
-  test('failure result records lastError and failure time', () async {
-    final h = _Hooks();
-    final now = DateTime(2026, 7, 24, 12);
-    final s = _scheduler(h, clock: () => now);
-    h.nextResult = const AutoSyncResult(success: false, error: 'boom');
+  group('non-success sync outcomes are recorded', () {
+    // Each row: how the attempt ends, and what the status must show.
+    final cases =
+        <
+          ({
+            String name,
+            AutoSyncResult? result,
+            Object? thrown,
+            String errorContains,
+            bool conflicts,
+          })
+        >[
+          (
+            name: 'failure result records lastError and failure time',
+            result: const AutoSyncResult(success: false, error: 'boom'),
+            thrown: null,
+            errorContains: 'boom',
+            conflicts: false,
+          ),
+          (
+            name: 'conflict result sets hasPendingConflicts',
+            result: const AutoSyncResult(success: true, hasConflicts: true),
+            thrown: null,
+            errorContains: 'manual resolution',
+            conflicts: true,
+          ),
+          (
+            name: 'runSync exception is caught and recorded',
+            result: null,
+            thrown: Exception('network down'),
+            errorContains: 'network down',
+            conflicts: false,
+          ),
+        ];
 
-    s.requestSyncNow();
-    await Future<void>.delayed(Duration.zero);
-    await Future<void>.delayed(Duration.zero);
+    for (final c in cases) {
+      test(c.name, () async {
+        final h = _Hooks();
+        final now = DateTime(2026, 7, 24, 12);
+        final s = _scheduler(h, clock: () => now);
+        if (c.result != null) h.nextResult = c.result!;
+        h.syncError = c.thrown;
 
-    expect(s.lastError, 'boom');
-    expect(s.lastFailureAt, now);
-    expect(s.hasPendingConflicts, isFalse);
-    s.stop();
-  });
+        s.requestSyncNow();
+        await Future<void>.delayed(Duration.zero);
+        await Future<void>.delayed(Duration.zero);
 
-  test('conflict result sets hasPendingConflicts', () async {
-    final h = _Hooks();
-    final s = _scheduler(h);
-    h.nextResult = const AutoSyncResult(success: true, hasConflicts: true);
-
-    s.requestSyncNow();
-    await Future<void>.delayed(Duration.zero);
-    await Future<void>.delayed(Duration.zero);
-
-    expect(s.hasPendingConflicts, isTrue);
-    expect(s.lastError, contains('manual resolution'));
-    s.stop();
-  });
-
-  test('runSync exception is caught and recorded', () async {
-    final h = _Hooks();
-    final s = _scheduler(h);
-    h.syncError = Exception('network down');
-
-    s.requestSyncNow();
-    await Future<void>.delayed(Duration.zero);
-    await Future<void>.delayed(Duration.zero);
-
-    expect(s.lastError, isNotNull);
-    expect(s.lastError, contains('network down'));
-    s.stop();
+        expect(s.lastError, contains(c.errorContains));
+        expect(s.lastFailureAt, now);
+        expect(s.hasPendingConflicts, c.conflicts);
+        s.stop();
+      });
+    }
   });
 
   test(

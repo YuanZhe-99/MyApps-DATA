@@ -28,4 +28,4 @@
 - 未知条目和格式错误的图像条目通过 `rejectUnknownEntries` 选择失败（true）或跳过（false）（M7；MyAnime/MyDevice 用 false）。
 - 数据负载通过 `strictUtf8` 选择严格 UTF-8 解码（true）或原始写入（false）（M8）。
 - `validateBeforeWrite` 在任何写入之前对每个数据条目运行 `DataModule.validate`（M9，true = MyDay）；`atomicWrites` 选择 tmp-重命名还是普通 `writeAsBytes`（M9）。
-- 导入只在应用目录内覆盖，绝不触发重新同步或备份，并在成功后运行一次可选的 `onAfterImport` 钩子（M10）。不调用保留引擎（M15）；保留字段由应用校验器处理。
+- 导入只在应用目录内覆盖，绝不触发重新同步或备份，并在成功后运行一次可选的 `onAfterImport` 钩子（M10）。不调用保留引擎（M15）；保留字段由应用校验器处理。条目内容按解码结果直接使用，不再逐条额外复制（1.0.3）。

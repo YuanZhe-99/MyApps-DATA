@@ -2,7 +2,7 @@
 
 ## 本包是什么
 
-`myapps_data` 是共享的 Flutter 包，承载 WebDAV 同步引擎和数据管理引擎（备份/恢复、ZIP 导入/导出，以及它们共享的底层设施），服务于四个姊妹应用：**MyAnime**、**MyDay**、**MyDevice** 和 **MyNihongo**。
+`myapps_data` 是共享的 Flutter 包，承载 WebDAV 同步引擎和数据管理引擎（备份/恢复、ZIP 导入/导出，以及它们共享的底层设施），服务于五个姊妹应用：**MyAnime**、**MyDay**、**MyDevice**、**MyNihongo** 和 **MyTranscribe**。
 
 本包是从前三个应用中抽取出来的。在抽取之前，它们每个都手工维护着自己近乎相同——且不断漂移——的以下文件副本：
 
@@ -33,7 +33,7 @@ lib/shared/services/import_export_service.dart
 
 ## 当前状态（完整并在生产中）
 
-以下每个引擎区域都已实现、经过单元测试，并被四个应用消费。P2.1 移动了两个在 MyAnime、MyDay、MyDevice 间验证为逐字节相同的文件：
+以下每个引擎区域都已实现、经过单元测试，并被五个应用消费。P2.1 移动了两个在 MyAnime、MyDay、MyDevice 间验证为逐字节相同的文件：
 
 - `lib/src/webdav/sync_progress.dart`：共享的进度阶段、不可变的进度快照，以及应用 UI 消费的 `ValueListenable` 类型别名。
 - `lib/src/sync/sync_wake_lock.dart`：引用计数、所有权安全的前台同步唤醒锁。它从不禁用另一个功能拥有的锁，并把插件失败视为尽力而为。
@@ -67,9 +67,11 @@ P2.2–P2.6 还提供：
 
 MyNihongo（1 模块）是第四个消费者，也是第一个从来不是抽取来源的消费者：它从第一个提交起就建立在本包之上，因此没有移除任何引擎行数，它的门面从一开始就是按门面写的，而不是被削减成门面的。
 
+MyTranscribe（2 个模块：设置与转写稿）是第五个消费者，与 MyNihongo 一样，从未持有引擎代码的副本。
+
 每个应用把此前的公共服务 API 保留为薄门面（`WebDAVService`、`BackupService`、`ImportExportService`、`AutoSyncService`），所以无需改动任何应用测试。无法统一的应用特有行为以显式钩子而非抹除的方式存活——MyDay 的财务强制余额迁移（`postMergeTransform`）、它的整文件汇率合并、它的模式驱动保留（`preUploadTransform`）和它的 `ReminderService` 驱动每日备份；MyDevice 的 `mergeAssignments` 和它的合成 `images` 备份模块。
 
-## 四个应用如何消费本包
+## 五个应用如何消费本包
 
 每个应用把本仓库作为 git **子模块**嵌入到 `packages/myapps_data`，使用相对 URL `../MyApps-DATA.git`（因此它按应用自身被克隆自的主机——Gitea 或 GitHub——解析），外加一个 pub **路径依赖**：
 

@@ -33,7 +33,7 @@ reference-counted GC; legacy v1 bundles with inline base64 `_images` remain rest
 | `BackupEngine._enableAutoSyncAfterUntouchedRestore` | private method | A | Best-effort auto-sync re-enable. |
 | `BackupEngine.restoreBackup` | method | A | Validate-then-write restore with I5 auto-sync toggle. |
 | `BackupEngine.deleteBackup` | method | A | Delete a bundle, then garbage collect blobs. |
-| `BackupEngine._cleanOldBackups` | private method | A | Age-based retention (0 = forever). |
+| `BackupEngine._cleanOldBackups` | private method | A | Age-based retention (0 = forever) via a light stamp/mtime listing. |
 | `BackupEngine._collectUnreferencedBlobs` | private method | A | Conservative reference-counted blob GC. |
 
 ## Bundle format (fixed, I2/C8)
@@ -42,6 +42,14 @@ reference-counted GC; legacy v1 bundles with inline base64 `_images` remain rest
 `{'_backupFormat': 2}`, one key per existing module file holding its raw JSON text as a string
 (registry order), and `_imageRefs` (`'images/<name>' -> '<sha256><ext>'`) only when images exist.
 There is no `createdAt` and no `modules` field (correction C8). `_images` is legacy v1 read-only.
+
+## Retention
+
+After the bundle is written, `createBackup` runs retention inside its own try/catch: a cleanup
+failure can no longer turn a successful backup into a `null` result (1.0.3). `_cleanOldBackups`
+lists `backup_*.json` directly and dates each file by its filename stamp (mtime when the stamp is
+malformed) instead of calling `listBackups`, so no bundle is parsed - expired corrupt bundles are
+removed too - and each delete is isolated, so one locked file does not stop the pass.
 
 ## Blob store and GC
 

@@ -54,7 +54,9 @@ trailing-edge debounced trigger.
 ## Guard and status
 
 `_trySync` silently skips when `_syncing` is already true (overlapping triggers are ignored, not
-surfaced as errors). The config gate (`isAutoSyncActive`) runs before the guard is acquired, so a
+surfaced as errors). The guard is taken synchronously, before the config gate
+(`isAutoSyncActive`) is awaited, so two triggers arriving while the gate is pending cannot both run
+a sync (1.0.3); a gate that answers "inactive" releases the guard at once, so a
 not-configured attempt never blocks a later real sync. Outcomes are recorded in memory only
 (`lastSuccessAt`/`lastFailureAt`/`lastError`/`hasPendingConflicts`) and fanned out to status
 listeners; auto-sync always leaves conflict auto-resolution off (H4), recording true two-sided

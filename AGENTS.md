@@ -4,9 +4,9 @@ Operating guide for agents working on this repository. This file holds **only** 
 work here. Everything describing what the code *is* or *does* lives in `doc/en-us/` — see
 [Where to read what](#where-to-read-what).
 
-`myapps_data` is the shared WebDAV-sync and data-management package consumed by four sibling apps
-(**MyAnime**, **MyDay**, **MyDevice**, **MyNihongo**) as a git submodule at `packages/myapps_data`.
-It is the load-bearing layer under all four: a bug here ships to all of them, and a wire-format
+`myapps_data` is the shared WebDAV-sync and data-management package consumed by five sibling apps
+(**MyAnime**, **MyDay**, **MyDevice**, **MyNihongo**, **MyTranscribe**) as a git submodule at `packages/myapps_data`.
+It is the load-bearing layer under all five: a bug here ships to all of them, and a wire-format
 change here can strand existing installs.
 
 ## Reading order
@@ -104,7 +104,7 @@ Other conventions:
 
 ## Behavior contract
 
-This package is consumed by three shipped apps, so treat these as non-negotiable unless the user
+This package is consumed by five apps, so treat these as non-negotiable unless the user
 explicitly decides otherwise:
 
 - The **WebDAV wire format**, remote layout, and `.lock` semantics (60s TTL, 20s heartbeat) are a

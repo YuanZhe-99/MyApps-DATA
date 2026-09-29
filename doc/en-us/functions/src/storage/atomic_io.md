@@ -10,6 +10,7 @@ load-bearing per-storage write queues.
 |---|---|---|---|
 | `atomicWriteString` | function | A | Atomically replace a file with UTF-8 text. |
 | `atomicWriteBytes` | function | A | Atomically replace a file with bytes. |
+| `_temporaryFileFor` | private function | A | Build a unique same-directory temporary path (`.tmp-<microseconds>-<seq>`). |
 | `_deleteTemporaryFile` | private function | A | Clean a failed write's temporary file best-effort. |
 | `AtomicWriteQueue` | class | A | Serialize writes for one storage owner or file. |
 | `AtomicWriteQueue.enqueue` | method | A | Append an operation while preserving its own result. |
@@ -19,7 +20,9 @@ load-bearing per-storage write queues.
 
 Both writers use the same sequence:
 
-1. Build a same-directory temporary path named `<target>.tmp-<microsecondsSinceEpoch>`.
+1. Build a same-directory temporary path named `<target>.tmp-<microsecondsSinceEpoch>-<seq>`,
+   where `<seq>` is a process-wide counter so two writes to one destination that start in the same
+   microsecond never share a temporary file.
 2. Create the destination's parent directory recursively when needed.
 3. Write with `flush: true`.
 4. Rename the temporary file over the destination.

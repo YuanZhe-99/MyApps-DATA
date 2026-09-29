@@ -1,11 +1,11 @@
 # MyApps-DATA (`myapps_data`)
 
 Shared WebDAV sync & data-management (backup/restore, ZIP import/export) Flutter package
-for **MyAnime**, **MyDay**, **MyDevice**, and **MyNihongo**.
+for **MyAnime**, **MyDay**, **MyDevice**, **MyNihongo**, and **MyTranscribe**.
 
-Status: **stable and in production at `v1.0.2`.** All four apps consume this package: MyAnime,
-MyDay, and MyDevice shipped on it in their `v1.3.0` releases, and MyNihongo has been built on it
-since its first release.
+Status: **stable and in production at `v1.0.3`.** All five apps consume this package: MyAnime,
+MyDay, and MyDevice shipped on it in their `v1.3.0` releases, MyNihongo has been built on it since
+its first release, and MyTranscribe consumes it as the fifth app.
 
 The package provides shared sync-progress and wake-lock helpers, JSON preservation, generic record
 merging, atomic file replacement with optional serialized write queues, the WebDAV transport client

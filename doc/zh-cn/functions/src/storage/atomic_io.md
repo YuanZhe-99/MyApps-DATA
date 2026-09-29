@@ -8,6 +8,7 @@
 |---|---|---|---|
 | `atomicWriteString` | 函数 | A | 用 UTF-8 文本原子替换一个文件。 |
 | `atomicWriteBytes` | 函数 | A | 用字节原子替换一个文件。 |
+| `_temporaryFileFor` | 私有函数 | A | 构建唯一的同目录临时路径（`.tmp-<microseconds>-<seq>`）。 |
 | `_deleteTemporaryFile` | 私有函数 | A | 尽力而为地清理失败写入的临时文件。 |
 | `AtomicWriteQueue` | 类 | A | 为一个存储所有者或文件串行化写入。 |
 | `AtomicWriteQueue.enqueue` | 方法 | A | 追加一个操作，同时保留其自身的结果。 |
@@ -17,7 +18,7 @@
 
 两个写入器使用同一序列：
 
-1. 构建一个同目录临时路径，命名为 `<target>.tmp-<microsecondsSinceEpoch>`。
+1. 构建一个同目录临时路径，命名为 `<target>.tmp-<microsecondsSinceEpoch>-<seq>`，其中 `<seq>` 是进程级计数器，因此对同一目标、在同一微秒内开始的两次写入绝不会共用一个临时文件。
 2. 需要时递归创建目标的父目录。
 3. 用 `flush: true` 写入。
 4. 把临时文件重命名覆盖目标。

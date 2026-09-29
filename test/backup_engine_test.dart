@@ -283,6 +283,51 @@ void main() {
       expect(await fresh.exists(), isTrue);
     });
 
+    test(
+      'expired bundles are deleted by filename stamp even if corrupt',
+      () async {
+        await writeData('a_data.json', {'items': 1});
+        await backupDir().create(recursive: true);
+        final corruptOld = File(
+          p.join(backupDir().path, 'backup_20200101_000000.json'),
+        );
+        await corruptOld.writeAsString('{not json');
+        final recent = File(
+          p.join(backupDir().path, 'backup_20260720_000000.json'),
+        );
+        await recent.writeAsString('{not json either');
+
+        final instance = engine()..retentionDays = 7;
+        final fresh = (await instance.createBackup())!;
+
+        expect(await corruptOld.exists(), isFalse);
+        expect(await recent.exists(), isTrue); // inside the window
+        expect(await fresh.exists(), isTrue);
+      },
+    );
+
+    test('a failing retention delete never hides the new backup', () async {
+      await writeData('a_data.json', {'items': 1});
+      await backupDir().create(recursive: true);
+      final locked = File(
+        p.join(backupDir().path, 'backup_20200101_000000.json'),
+      );
+      await locked.writeAsString('{}');
+      // An open handle makes the delete fail on Windows; on other platforms
+      // the delete may succeed, which is fine: the contract under test is that
+      // createBackup still reports the file it wrote.
+      final handle = await locked.open(mode: FileMode.append);
+      try {
+        final instance = engine()..retentionDays = 7;
+        final fresh = await instance.createBackup();
+
+        expect(fresh, isNotNull);
+        expect(await fresh!.exists(), isTrue);
+      } finally {
+        await handle.close();
+      }
+    });
+
     test('retentionDays 0 keeps backups forever', () async {
       await writeData('a_data.json', {'items': 1});
       final old = (await engine().createBackup())!;

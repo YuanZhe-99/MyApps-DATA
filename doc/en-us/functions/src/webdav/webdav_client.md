@@ -55,9 +55,11 @@ to the apps' current values (I3).
   `SocketException`/`TimeoutException`/`http.ClientException`/`HttpException` and on
   `shouldRetry` (5xx); 4xx never retried; backoff = `retryDelay * attemptIndex` (§D1-D4).
 - **Verbs:**
-  - `testConnection()` - PROPFIND Depth:0, 10s timeout, returns `true` for 207 or 404 (§A9-A10).
-  - `ensureRemoteDir()` - MKCOL on the base path, 10s timeout, swallows all errors (§A11).
-  - `ensureRemoteSubDir(String name)` - MKCOL on a sub-directory (§A12).
+  - `testConnection()` - PROPFIND Depth:0, 10s timeout, returns `true` for 207 or 404 (§A9-A10);
+    the response body is drained.
+  - `ensureRemoteDir()` - MKCOL on the base path, 10s timeout, drains the body, swallows all errors
+    (§A11).
+  - `ensureRemoteSubDir(String name)` - MKCOL on a sub-directory; drains the body (§A12).
   - `download(String name)` - GET, 30s timeout, retries on 5xx, returns `RemoteFile` (§A15/D5-D6).
     The body is decoded from `bodyBytes` as UTF-8, never through `response.body`: `package:http`
     falls back to latin1 when the response carries no charset, which servers commonly omit for
@@ -70,7 +72,8 @@ to the apps' current values (I3).
   - `downloadBytes(name)` - GET binary, 120s timeout, throws on non-200 (§A16).
   - `delete(name, {etag})` - DELETE, 10s timeout, swallows all errors (§A17).
   - `listSubDir(name)` - PROPFIND Depth:1, `propfindTimeout`, returns `Set<String>?` (null on
-    failure; §C-P1-P4). Adopts MyDevice's `<(?:\w+:)?href>` regex and `p.basename`.
+    failure; §C-P1-P4). Adopts MyDevice's `<(?:\w+:)?href>` regex and `p.basename`. A non-207 response body
+    is drained before returning `null`.
 - **Remote lock primitives:**
   - `readRemoteUploadLock()` - reads and parses `.lock`; returns `({lock, etag, error})` (§B).
   - `writeRemoteUploadLock(lock, {ifMatchEtag, ifNoneMatchAll})` - writes `.lock` with
@@ -78,7 +81,11 @@ to the apps' current values (I3).
   - `deleteRemoteUploadLock({etag})` - deletes `.lock` (§A17/B).
 - **Heartbeat:** `withLockHeartbeat({refreshLock, operation})` - runs `operation` while
   periodically calling `refreshLock` at `heartbeatInterval`; heartbeat errors are swallowed
-  (§B6). The `refreshLock` closure is provided by the sync engine (P2.6).
+  (§B6). Before returning, a refresh still in flight is awaited so it cannot re-create the remote
+  lock after the caller releases it (1.0.3). The `refreshLock` closure is provided by the sync
+  engine (P2.6).
+- **Internal:** `static _drainBody(StreamedResponse)` - consumes and discards a status-only
+  response body (10s cap, all errors swallowed) so the connection is released.
 - **Notes:** The class performs **no local filesystem I/O**. Local lock-file management,
   client-ID persistence, and base-snapshot storage belong to the sync engine (P2.6) which
   composes these remote primitives with `StorageAdapter`.

@@ -22,6 +22,7 @@
 - `preserve({next, sources, schema})` 按顺序把每个来源中的未知键重新注入 `next`，并递归进入已知的 `objectFields`、`keyedObjectFields` 和 `listFields`（按 `JsonListPreservation.keyField` 匹配）。
 - `preserveJsonString({...})` 和 `encodeForFile({...})` 是 `preserve` 的字符串/文件便捷封装；格式错误的来源会被忽略。
 - 已知键总是来自 `next`；未知键来自来源。
+- `preserve` 只对 `next` 深拷贝一次，随后各层辅助函数（`_preserveOne`、`_preserveKeyedObjects`、`_preserveListItems`）对每一层映射只做浅拷贝（1.0.3）：该树已是新建的，嵌套值是被替换而非原地修改，因此结果仍与 `next` 和各来源不共享任何可变结构，而开销从 O(深度 x 大小) 降为 O(大小)。
 
 ### 平铺映射引擎（`unknownJsonFields` / `mergeUnknownJsonFields`）
 

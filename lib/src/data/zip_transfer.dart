@@ -178,7 +178,7 @@ class ZipTransfer {
   /// fail the import (M6); unknown/malformed entries follow
   /// [rejectUnknownEntries] (M7); data payloads follow [strictUtf8] and
   /// [validateBeforeWrite] (M8/M9). Import never triggers re-sync or backup
-  /// (M10).
+  /// (M10). Entry contents are used as decoded, without an extra copy.
   Future<bool> importZip(String filePath) async {
     try {
       final zipFile = File(filePath);
@@ -199,7 +199,7 @@ class ZipTransfer {
 
         final module = modules.byFileName[normalized];
         if (module != null) {
-          final rawBytes = List<int>.from(entry.content as List<int>);
+          final rawBytes = entry.content as List<int>;
           if (strictUtf8 || validateBeforeWrite) {
             final content = utf8.decode(rawBytes, allowMalformed: !strictUtf8);
             if (validateBeforeWrite) {
@@ -216,7 +216,7 @@ class ZipTransfer {
             if (rejectUnknownEntries) return false;
             continue;
           }
-          imageWrites[basename] = List<int>.from(entry.content as List<int>);
+          imageWrites[basename] = entry.content as List<int>;
           continue;
         }
 

@@ -1,7 +1,7 @@
 # Purpose: Check out a tagged myapps_data release in every sibling app checkout and
 #          print the pointer-bump commands.
 # Inputs:  -Tag <vX.Y.Z> (required); -Root <path> (default: parent of this repo);
-#          -Apps <names> (default: MyAnime, MyDay, MyDevice, MyNihongo); -Verify to run
+#          -Apps <names> (default: MyAnime, MyDay, MyDevice, MyNihongo, MyTranscribe); -Verify to run
 #          analyze+test.
 # Returns: Exit code 0 when every app was updated; 1 when any app failed.
 # Side effects: Fetches in each app's submodule and checks out the tag there. Does NOT
@@ -16,7 +16,7 @@ param(
 
     [string]$Root,
 
-    [string[]]$Apps = @('MyAnime', 'MyDay', 'MyDevice', 'MyNihongo'),
+    [string[]]$Apps = @('MyAnime', 'MyDay', 'MyDevice', 'MyNihongo', 'MyTranscribe'),
 
     [switch]$Verify
 )
