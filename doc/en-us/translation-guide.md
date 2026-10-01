@@ -129,6 +129,14 @@ which one it belongs in — see the rule in Section 1.
 | bottom navigation bar | 底部导航栏 | |
 | content width | 内容宽度 | 扣除导航栏后页面内容实际获得的宽度 |
 | column capacity | 列容量 | 给定最小列宽时一行能容纳的列数 |
+| interface style | 界面风格 | 设置 › 通用里的选项，取值 Material 3 与 Expressive（默认）；Expressive 含悬浮导航栏。zh-TW 用「介面風格」，ja 用「インターフェーススタイル」 |
+| Expressive | Expressive | 界面风格之一（默认）：在主题层面近似 Material 3 Expressive（更圆的形状、更粗的标题、悬浮导航栏）；所有语言都不翻译，与「Material 3」并列 |
+| floating navigation bar | 悬浮导航栏 | 窄窗口底栏的悬浮样式：带边距、胶囊形的「岛」；属于 Expressive 界面风格，Material 3 使用经典通栏。zh-TW 用「懸浮導覽列」，ja 用「フローティングナビゲーションバー」 |
+| profile | 个人资料 | 名称加头像，保存在 `profile.json` 并同步；设置页顶部条目与编辑对话框都叫「个人资料」。zh-TW 用「個人資料」，ja 用「プロフィール」 |
+| avatar | 头像 | 个人资料里的图片，裁剪为 512 px 的正方形 JPEG，显示在圆形内。zh-TW 用「頭像」，ja 用「アバター」 |
+| display name | 名称 | 个人资料里的名字，界面标签写作「名称」，勿写成「昵称」或「用户名」。zh-TW 用「名稱」，ja 用「名前」 |
+| dynamic color | 动态取色 | 仅 Android 12 及以上：界面颜色取自壁纸（Material You）；其他平台使用种子色 |
+| seed color | 种子色 | `AppTheme.seedColor`，生成整套 Material 3 配色的品牌色；每个 App 各不相同 |
 
 ### 5.2 MyApps-DATA-specific terms
 
