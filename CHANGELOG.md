@@ -1,5 +1,10 @@
 # Changelog
 
+## 1.0.5 - 2026-10-05
+
+Shared WebDAV connection fields and save/test, manual/force sync, auto-sync and
+disconnect controls. Applications retain operations and domain-specific content.
+
 ## 1.0.4 - 2026-10-05
 
 Shared data action tiles and daily-backup/retention settings presentation with

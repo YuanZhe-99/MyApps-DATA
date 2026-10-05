@@ -38,6 +38,9 @@ For shared behavior and configurable policies, see [feature-matrix.md](feature-m
 ## Package layout
 
 Common data-management settings presentation lives in `lib/src/settings/`.
+WebDAV connection fields, save/test controls, manual/force sync controls,
+automatic-sync preference and disconnect affordances are shared. Applications
+inject domain-specific content and retain operation and confirmation callbacks.
 Action tiles and backup preferences accept application labels, status and callbacks;
 the package owns their presentation while applications retain routes and storage.
 

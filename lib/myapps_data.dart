@@ -12,6 +12,7 @@
 library;
 
 export 'src/settings/data_settings.dart';
+export 'src/settings/webdav_settings.dart';
 
 // P2.1: verbatim moves from the three apps (byte-identical sources).
 export 'src/webdav/sync_progress.dart';

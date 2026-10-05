@@ -1,5 +1,8 @@
 # Function Index
 
+WebDAV settings: [webdav_settings.dart](src/settings/webdav_settings.md)
+(five widgets, constructors and build methods; fifteen declarations).
+
 Settings presentation: [data_settings.dart](src/settings/data_settings.md)
 (enum, two widgets and constructors/build methods; seven declarations).
 
