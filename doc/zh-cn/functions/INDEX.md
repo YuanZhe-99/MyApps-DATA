@@ -1,5 +1,8 @@
 # 函数索引
 
+设置呈现：[data_settings.dart](src/settings/data_settings.md)
+（枚举、两个组件及其构造器和 build 方法，共七个声明）。
+
 `lib/` 中已记录的声明总数：**217**（Tier A：217，Tier B：0）。
 
 本索引覆盖 `lib/src/` 下的每个声明。每个新源文件都必须在此获得一行，并在 `functions/` 下获得自己的页面，路径与源路径镜像——去掉 `lib/`、把 `.dart` 换成 `.md`。

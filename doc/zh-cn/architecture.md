@@ -29,6 +29,9 @@ lib/shared/services/import_export_service.dart
 
 ## 包结构
 
+通用数据管理设置呈现位于 `lib/src/settings/`。操作行和备份偏好接受应用文案、
+状态和回调；共享包管理呈现，应用保留路由和存储。
+
 `lib/src/` 按区域组织：`storage/`（`StorageAdapter`、原子 I/O）、`json/`（JSON 保留引擎）、`merge/`（`mergeRecords<T>`）、`modules/`（`DataModule`/`ModuleRegistry`）、`webdav/`（配置、客户端、上传锁、同步引擎、进度）、`sync/`（自动同步调度器、唤醒锁）、`backup/`（备份引擎）、`data/`（ZIP 传输）。公共 API 只通过 `lib/myapps_data.dart` 导出；使用者不得直接导入 `src/` 路径。
 
 ## 当前状态（完整并在生产中）

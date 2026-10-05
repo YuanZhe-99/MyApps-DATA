@@ -37,6 +37,10 @@ For shared behavior and configurable policies, see [feature-matrix.md](feature-m
 
 ## Package layout
 
+Common data-management settings presentation lives in `lib/src/settings/`.
+Action tiles and backup preferences accept application labels, status and callbacks;
+the package owns their presentation while applications retain routes and storage.
+
 `lib/src/` is organized by area: `storage/` (`StorageAdapter`, atomic I/O), `json/` (JSON-preservation
 engines), `merge/` (`mergeRecords<T>`), `modules/` (`DataModule`/`ModuleRegistry`), `webdav/` (config,
 client, upload lock, sync engine, progress), `sync/` (auto-sync scheduler, wake lock), `backup/`

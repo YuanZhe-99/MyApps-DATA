@@ -1,5 +1,10 @@
 # Changelog
 
+## 1.0.4 - 2026-10-05
+
+Shared data action tiles and daily-backup/retention settings presentation with
+injected application labels, routes and persistence. Engine formats are unchanged.
+
 ## 1.0.3 - 2026-09-28
 
 Maintenance release: correctness and performance fixes, with no wire-format or on-disk format

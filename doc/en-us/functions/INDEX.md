@@ -1,5 +1,8 @@
 # Function Index
 
+Settings presentation: [data_settings.dart](src/settings/data_settings.md)
+(enum, two widgets and constructors/build methods; seven declarations).
+
 Total documented declarations in `lib/`: **217** (Tier A: 217, Tier B: 0).
 
 This index covers every declaration under `lib/src/`. Every

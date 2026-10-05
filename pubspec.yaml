@@ -1,6 +1,6 @@
 name: myapps_data
 description: Shared WebDAV sync & data-management package for MyAnime/MyDay/MyDevice/MyNihongo/MyTranscribe.
-version: 1.0.3
+version: 1.0.4
 publish_to: 'none'
 
 environment:

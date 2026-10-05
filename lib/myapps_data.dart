@@ -11,6 +11,8 @@
 /// this barrel only; consumers must not import `src/` paths directly.
 library;
 
+export 'src/settings/data_settings.dart';
+
 // P2.1: verbatim moves from the three apps (byte-identical sources).
 export 'src/webdav/sync_progress.dart';
 export 'src/sync/sync_wake_lock.dart';
