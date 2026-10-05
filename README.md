@@ -1,11 +1,9 @@
 # MyApps-DATA (`myapps_data`)
 
-Shared WebDAV sync & data-management (backup/restore, ZIP import/export) Flutter package
-for **MyAnime**, **MyDay**, **MyDevice**, **MyNihongo**, and **MyTranscribe**.
-
-Status: **stable and in production at `v1.0.3`.** All five apps consume this package: MyAnime,
-MyDay, and MyDevice shipped on it in their `v1.3.0` releases, MyNihongo has been built on it since
-its first release, and MyTranscribe consumes it as the fifth app.
+Shared WebDAV sync & data-management (backup/restore, ZIP import/export) Flutter package.
+Applications integrate it through module descriptors and storage adapters, retaining
+their own models, data, UI and domain policies. Document concrete integrations in
+the corresponding application repository.
 
 The package provides shared sync-progress and wake-lock helpers, JSON preservation, generic record
 merging, atomic file replacement with optional serialized write queues, the WebDAV transport client
@@ -15,12 +13,12 @@ reference-counted GC, retention, guarded daily auto-backup, and validate-before-
 with the auto-sync-disable safety rule), the ZIP transfer engine (registry-driven export allowlist,
 traversal-safe two-phase import, per-app strictness knobs), and the auto-sync scheduler
 (lifecycle/debounce/periodic core with app hooks preserving each app's trigger topology and side
-effects). Package-owned request and format goldens cover synthetic MyAnime, MyDay, and MyDevice
-registries in CI.
+effects). Package-owned request and format goldens cover synthetic single-module
+and multi-module registries in CI.
 
 - Documentation: [`doc/en-us/`](doc/en-us/) — start at its README.
 - Behavior contract (invariants, accepted unifications): [`doc/en-us/invariants.md`](doc/en-us/invariants.md).
-- Per-behavior audit of the three original apps' implementations: [`doc/en-us/feature-matrix.md`](doc/en-us/feature-matrix.md).
+- Shared behavior and configuration: [`doc/en-us/feature-matrix.md`](doc/en-us/feature-matrix.md).
 - Contributor and agent rules: [AGENTS.md](AGENTS.md).
 
 ## Consuming (apps)

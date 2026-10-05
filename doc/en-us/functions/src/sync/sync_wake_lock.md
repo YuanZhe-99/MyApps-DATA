@@ -29,7 +29,7 @@ byte-identical.
 5. Releasing with a zero reference count is a safe no-op.
 
 This ownership rule prevents sync completion from turning off a lock held by another feature, such
-as MyDay's intimacy timer.
+as a running timer.
 
 ### `acquire()`
 

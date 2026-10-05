@@ -1,8 +1,7 @@
 # lib/src/data/zip_transfer.dart
 
-Generic ZIP data transfer engine (P2.8), reconciled from the three apps'
-`import_export_service.dart` implementations (feature-matrix §M). Export bundles exactly the
-registry's data files plus flat `images/<basename>` entries; import is standardized on MyDay's
+Generic ZIP data transfer engine (feature-matrix §M). Export bundles exactly the
+registry's data files plus flat `images/<basename>` entries; import uses
 strict semantics with per-app leniency preserved as constructor knobs. Markdown export stays
 app-side (M14, non-goal).
 
@@ -32,14 +31,14 @@ preserves `myanime_export_`, `myday_backup_`, and `mydevice_export_`. Configurat
 
 `importZip(filePath)` is two-phase: every entry is classified (and, when enabled, validated)
 before any file is written, so a rejected archive never leaves partial writes. Semantics are
-MyDay's strict form by default:
+strict defaults:
 
 - Traversal (`../`, `/../` after `p.url.normalize`) always fails the import (M6, fixed).
 - Unknown entries and malformed image entries fail (true) or are skipped (false) via
-  `rejectUnknownEntries` (M7; MyAnime/MyDevice use false).
+  `rejectUnknownEntries` (M7).
 - Data payloads are strict-UTF-8 decoded (true) or written raw (false) via `strictUtf8` (M8).
 - `validateBeforeWrite` runs `DataModule.validate` on every data entry before any write (M9,
-  true = MyDay); `atomicWrites` selects tmp-then-rename vs plain `writeAsBytes` (M9).
+  true by default); `atomicWrites` selects tmp-then-rename vs plain `writeAsBytes` (M9).
 - Import overwrites inside the app directory only, never triggers re-sync or backup, and runs the
   optional `onAfterImport` hook once after success (M10). No preservation engine is invoked
   (M15); app validators handle preserved fields. Entry contents are used as decoded, without an

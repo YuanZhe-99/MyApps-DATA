@@ -41,7 +41,7 @@
 
 ## 触发（H1–H3）
 
-固定的触发集被保留：应用启动（`start`）、应用恢复（仅 `resumed`）、15 分钟周期计时器、`notifySaved` 后的 30 秒后沿防抖，以及启用/保存自动同步配置后的 `requestSyncNow`。`notifySaved` 在 `start` 之前被忽略，因此早期存储写入不可能安排同步。启动、周期和恢复统一为先取消挂起的保存防抖再立即同步（MyAnime 的行为）；`notifySaved` 是唯一的后沿防抖触发。
+固定的触发集被保留：应用启动（`start`）、应用恢复（仅 `resumed`）、15 分钟周期计时器、`notifySaved` 后的 30 秒后沿防抖，以及启用/保存自动同步配置后的 `requestSyncNow`。`notifySaved` 在 `start` 之前被忽略，因此早期存储写入不可能安排同步。启动、周期和恢复先取消挂起的保存防抖再立即同步；`notifySaved` 是唯一的后沿防抖触发。
 
 ## 守卫与状态
 
@@ -49,4 +49,4 @@
 
 ## 应用钩子（H5/H6）
 
-应用特有的差异以钩子而非配置存活：`onPeriodicTick`（MyAnime/MyDevice 在这里运行每日 `BackupService.runAutoBackupIfNeeded`；MyDay 把它留空，因为它的 `ReminderService` 30 秒循环拥有备份——H5）和 `onResume`（MyAnime：备份 + 提醒；MyDay：移动提醒刷新；MyDevice：仅备份——H6）。`consumeLocalDataChanged` 接到 `WebDavSyncEngine.consumeLocalDataChanged` 上，使 `_trySync` 和 `notifyLocalDataChangedIfNeeded` 恰好在引擎写入本地数据或下载图像时重载打开的页面。
+应用通过 `onPeriodicTick` 和 `onResume` 提供备份、提醒或其他领域操作。其他服务负责该操作时可不设置钩子。`consumeLocalDataChanged` 接到 `WebDavSyncEngine.consumeLocalDataChanged` 上，使 `_trySync` 和 `notifyLocalDataChangedIfNeeded` 恰好在引擎写入本地数据或下载图像时重载打开的页面。

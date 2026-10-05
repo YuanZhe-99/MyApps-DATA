@@ -3,11 +3,10 @@
 ## What this package is
 
 `myapps_data` is the shared Flutter package holding the WebDAV sync engine and the data-management
-engine (backup/restore, ZIP import/export, and the plumbing they share) for five sibling apps:
-**MyAnime**, **MyDay**, **MyDevice**, **MyNihongo**, and **MyTranscribe**.
+engine (backup/restore, ZIP import/export, and the plumbing they share). Applications
+integrate through module descriptors, storage adapters and domain callbacks.
 
-The package was extracted from the first three. Until the extraction, each of them hand-maintained
-its own near-identical — and steadily drifting — copies of:
+The package centralizes reusable service logic that applications can expose through facades:
 
 ```
 lib/shared/services/webdav_service.dart
@@ -20,9 +19,8 @@ lib/shared/services/import_export_service.dart
 ```
 
 This package is now the single source of truth for that logic. Each app keeps its own data models,
-UI, storage hub, and app-specific merge wrappers; everything shared arrives here. The three original
-apps shipped on it in their `v1.3.0` releases, and ~7,700 lines of duplicated engine code left them.
-MyNihongo, added afterwards, was built on the package from its first commit and never held a copy.
+UI, storage hub, and app-specific merge wrappers. Record concrete integrations and
+validation in each application's documentation.
 
 ## The behavior contract
 
@@ -35,8 +33,7 @@ Read [invariants.md](invariants.md) before doing any structural work here. It ho
 - The **unification rule** and the list of accepted unifications, each with its behavioral
   consequence.
 
-For the per-behavior detail — what each app originally did, and whether the difference became fixed
-or a configurable knob — see [feature-matrix.md](feature-matrix.md).
+For shared behavior and configurable policies, see [feature-matrix.md](feature-matrix.md).
 
 ## Package layout
 
@@ -48,15 +45,14 @@ client, upload lock, sync engine, progress), `sync/` (auto-sync scheduler, wake 
 
 ## Current state (complete and in production)
 
-Every engine area below is implemented, unit-tested, and consumed by all five apps. P2.1 moved two
-files that were verified byte-identical across MyAnime, MyDay, and MyDevice:
+Every engine area below is implemented and unit-tested. Progress and wake-lock helpers include:
 
 - `lib/src/webdav/sync_progress.dart`: shared progress phases, immutable progress snapshots, and
   the `ValueListenable` type alias consumed by app UIs.
 - `lib/src/sync/sync_wake_lock.dart`: the reference-counted, ownership-safe foreground sync wake
   lock. It never disables a lock owned by another feature and treats plugin failures as best-effort.
 
-P2.2-P2.6 additionally provide:
+The remaining engine areas provide:
 
 - `lib/src/json/json_preservation.dart`: schema-driven and flat-map unknown-field preservation.
 - `lib/src/merge/sync_merge.dart`: the generic three-way `mergeRecords<T>` engine.
@@ -84,11 +80,11 @@ P2.2-P2.6 additionally provide:
   strings + `_imageRefs`, no `createdAt`/`modules`), sha256 content-addressed blob store with
   reference-counted GC (10-minute grace, abort-on-unparseable), age-based retention, guarded daily
   auto-backup, corrupt-bundle flagging, validate-before-write v1/v2 restore with the I5
-  auto-sync-disable interplay, the synthetic `images` module knob (MyDevice), and the tolerant
+  auto-sync-disable interplay, the synthetic `images` module knob, and the tolerant
   image-key sanitizer (J17).
 - `lib/src/data/zip_transfer.dart`: `ZipTransfer` registry-driven ZIP export (module files +
   `images/<basename>`, per-app archive name prefix) and two-phase validated import standardized on
-  MyDay's strict traversal rejection, with per-app leniency knobs (`rejectUnknownEntries`,
+  strict traversal rejection, with configurable leniency knobs (`rejectUnknownEntries`,
   `strictUtf8`, `validateBeforeWrite`, `atomicWrites`) and an optional after-import hook.
 - `lib/src/sync/auto_sync_scheduler.dart`: `AutoSyncScheduler` lifecycle-observed, debounced
   (30s), periodic (15min) auto-sync core with the `_syncing` guard, in-memory status, reload/status
@@ -97,35 +93,17 @@ P2.2-P2.6 additionally provide:
 
 All APIs are exported from `lib/myapps_data.dart` and covered by focused unit tests. 36 package-owned
 golden fixtures run the ten characterization sync scenarios plus backup-v2 and ZIP-export format
-checks against synthetic MyAnime (1 module), MyDay (5 modules), and MyDevice (4 modules) registries;
+checks against synthetic registries containing 1, 5 and 4 modules;
 the unfiltered CI test command verifies them. See [functions/INDEX.md](functions/INDEX.md) for the
 current declaration inventory.
 
-### Integration outcome
+### Application boundaries
 
-The three original apps consume this package and shipped on it in `v1.3.0`:
+Applications may retain public service APIs as thin facades. Domain merge policies,
+post-merge migrations, pre-upload preservation, backup triggers and image selection
+remain application-owned and enter through explicit hooks.
 
-| App | Modules | Engine lines removed | Existing tests |
-|---|---|---|---|
-| MyAnime | 1 | 2,038 | 56/56 pass unmodified |
-| MyDevice | 4 | ~2,000 | 59/59 pass unmodified |
-| MyDay | 5 | 3,635 | 132/132 pass unmodified |
-
-MyNihongo (1 module) is the fourth consumer and the first that was never an extraction source: it
-was built on the package from its first commit, so it removed no engine lines and its facades were
-written as facades rather than reduced to them.
-
-MyTranscribe (2 modules: settings and transcripts) is the fifth consumer and, like MyNihongo, never
-carried a copy of the engines.
-
-Each app keeps its previous public service APIs as thin facades (`WebDAVService`, `BackupService`,
-`ImportExportService`, `AutoSyncService`), so no app test needed editing. App-specific behavior that
-could not be unified survives as explicit hooks rather than being erased — MyDay's finance
-forced-balance migration (`postMergeTransform`), its whole-file exchange-rate merge, its
-schema-driven preservation (`preUploadTransform`), and its `ReminderService`-driven daily backup;
-MyDevice's `mergeAssignments` and its synthetic `images` backup module.
-
-## How the five apps consume this package
+## How applications integrate this package
 
 Each app embeds this repository as a git **submodule** at `packages/myapps_data`, using the
 relative URL `../MyApps-DATA.git` (so it resolves against whichever host the app itself was cloned
@@ -142,7 +120,7 @@ effective lockfile. Apps pin to a **tagged** release commit before any app relea
 must be pushed to both remotes (`origin` and `github`) before any app's submodule pointer is
 bumped.
 
-## Conventions inherited from the three source apps
+## Conventions
 
 - **Function Explanation Layer**: every function, method, constructor, getter, and setter carries
   a structured `/// Purpose: / Inputs: / Returns: / Side effects: / Notes:` doc comment immediately
@@ -154,7 +132,7 @@ bumped.
 - **No app-specific knowledge** in this package: no app model imports, no hardcoded per-app data
   file lists, no localized user-facing strings. App-specific behavior is injected via
   `DataModule` descriptors and the `StorageAdapter` interface.
-- License: GPL-3.0, inherited from the three source apps.
+- License: GPL-3.0.
 
 ## Documentation maintenance
 

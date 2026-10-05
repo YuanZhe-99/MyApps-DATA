@@ -1,8 +1,6 @@
 # lib/src/storage/atomic_io.dart
 
-Generic atomic file replacement and optional serialized write queues (P2.4), reconciled from
-MyDay's `DataFileSafety`, the three backup services, the three WebDAV services, and MyDay's
-load-bearing per-storage write queues.
+Generic atomic file replacement and optional per-storage serialized write queues.
 
 ## Declarations
 
@@ -34,7 +32,7 @@ writes to the same destination should use an `AtomicWriteQueue`.
 
 ## `AtomicWriteQueue`
 
-The queue mirrors MyDay's storage pattern. Each storage owner keeps its own instance, so unrelated
+Each storage owner keeps its own queue instance, so unrelated
 files are not globally serialized. `enqueue` executes each operation exactly once in submission
 order. A failed operation still completes its caller-facing future with that error, while the
 internal queue tail absorbs the failure so later writes continue. `idle` waits for operations that

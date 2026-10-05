@@ -1,6 +1,6 @@
 # lib/src/data/zip_transfer.dart
 
-泛型 ZIP 数据传输引擎（P2.8），从三个应用的 `import_export_service.dart` 实现（feature-matrix §M）调和而成。导出恰好捆绑注册表的数据文件外加平铺的 `images/<basename>` 条目；导入以 MyDay 的严格语义为标准，按应用的宽容行为保留为构造函数开关。Markdown 导出留在应用侧（M14，非目标）。
+泛型 ZIP 数据传输引擎（feature-matrix §M）。导出恰好捆绑注册表的数据文件外加平铺的 `images/<basename>` 条目；导入使用严格语义，通过构造函数开关配置宽容行为。Markdown 导出留在应用侧（M14，非目标）。
 
 ## 声明
 
@@ -22,10 +22,10 @@
 
 ## 导入
 
-`importZip(filePath)` 是两阶段的：每个条目在任何文件写入之前被分类（并在启用时被校验），因此被拒绝的归档绝不会留下部分写入。语义默认是 MyDay 的严格形式：
+`importZip(filePath)` 是两阶段的：每个条目在任何文件写入之前被分类（并在启用时被校验），因此被拒绝的归档绝不会留下部分写入。默认使用严格语义：
 
 - 路径穿越（`p.url.normalize` 后的 `../`、`/../`）总是使导入失败（M6，固定）。
-- 未知条目和格式错误的图像条目通过 `rejectUnknownEntries` 选择失败（true）或跳过（false）（M7；MyAnime/MyDevice 用 false）。
+- 未知条目和格式错误的图像条目通过 `rejectUnknownEntries` 选择失败（true）或跳过（false）（M7）。
 - 数据负载通过 `strictUtf8` 选择严格 UTF-8 解码（true）或原始写入（false）（M8）。
-- `validateBeforeWrite` 在任何写入之前对每个数据条目运行 `DataModule.validate`（M9，true = MyDay）；`atomicWrites` 选择 tmp-重命名还是普通 `writeAsBytes`（M9）。
+- `validateBeforeWrite` 在任何写入之前对每个数据条目运行 `DataModule.validate`（M9，默认 true）；`atomicWrites` 选择 tmp-重命名还是普通 `writeAsBytes`（M9）。
 - 导入只在应用目录内覆盖，绝不触发重新同步或备份，并在成功后运行一次可选的 `onAfterImport` 钩子（M10）。不调用保留引擎（M15）；保留字段由应用校验器处理。条目内容按解码结果直接使用，不再逐条额外复制（1.0.3）。

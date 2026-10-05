@@ -48,7 +48,7 @@ The fixed trigger set is preserved: app launch (`start`), app resume (`resumed` 
 periodic timer, a 30-second trailing-edge debounce after `notifySaved`, and `requestSyncNow` after
 enabling/saving auto-sync config. `notifySaved` is ignored before `start` so early storage writes
 cannot schedule a sync. Launch, periodic, and resume are unified on canceling a pending
-save-debounce before syncing immediately (MyAnime's behavior); `notifySaved` is the only
+save-debounce before syncing immediately; `notifySaved` is the only
 trailing-edge debounced trigger.
 
 ## Guard and status
@@ -64,9 +64,8 @@ conflicts as visible pending state instead of LWW.
 
 ## App hooks (H5/H6)
 
-App-specific differences survive as hooks, not config: `onPeriodicTick` (MyAnime/MyDevice run daily
-`BackupService.runAutoBackupIfNeeded` here; MyDay leaves it null because its `ReminderService` 30s
-loop owns backup - H5) and `onResume` (MyAnime: backup + reminders; MyDay: mobile reminder refresh;
-MyDevice: backup only - H6). `consumeLocalDataChanged` is wired to
+Applications supply `onPeriodicTick` and `onResume` for backup, reminders or other
+domain actions. Leave hooks unset when another service owns the action.
+`consumeLocalDataChanged` is wired to
 `WebDavSyncEngine.consumeLocalDataChanged` so `_trySync` and `notifyLocalDataChangedIfNeeded` reload
 open pages exactly when the engine wrote local data or downloaded images.

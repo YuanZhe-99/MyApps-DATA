@@ -1,6 +1,6 @@
 # lib/src/webdav/webdav_config.dart
 
-MyAnime / MyDay / MyDevice 共享的持久化 WebDAV 配置。与三个应用的 `WebDAVConfig`（feature-matrix §A1–A4）行为相同，唯一例外是 `remotePath` 默认为 `''` 而非按应用的常量；按应用的默认值由同步引擎或应用门面注入。
+持久化 WebDAV 配置。`remotePath` 默认为 `''`，应用默认值由同步引擎或应用门面注入。
 
 ## 声明
 
@@ -18,7 +18,7 @@ MyAnime / MyDay / MyDevice 共享的持久化 WebDAV 配置。与三个应用的
   - `serverUrl`（`String`）— WebDAV 服务器基础 URL。
   - `username`（`String`）— HTTP Basic 认证用户名。
   - `password`（`String`）— HTTP Basic 认证密码。
-  - `remotePath`（`String`，默认 `''`）— 远程集合路径。按应用的默认值（`/MyAnime`、`/MyDay`、`/MyDevice`）由引擎/门面应用。
+  - `remotePath`（`String`，默认 `''`）— 远程集合路径。应用默认值由引擎/门面提供。
   - `autoSync`（`bool`，默认 `false`）— 是否启用自动同步。
 - **构造函数：**
   - `WebDAVConfig({required serverUrl, required username, required password, remotePath = '', autoSync = false})`。

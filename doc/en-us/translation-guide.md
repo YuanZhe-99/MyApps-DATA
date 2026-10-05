@@ -1,7 +1,7 @@
 # English → Simplified Chinese Translation Guide
 
 This guide governs how `doc/zh-cn/` is produced and kept in sync with `doc/en-us/` across
-MyAnime, MyDay, MyDevice, and MyApps-DATA. Sections 1-4 and 6 are copied byte-identically into
+shared infrastructure and application repositories. Sections 1-4 and 6 are maintained consistently in
 every repo's `doc/en-us/translation-guide.md`; Section 5's glossary is split into a shared core
 that is identical everywhere plus a per-repo section for terms only that repo uses (and, once the
 Chinese tree exists, `doc/zh-cn/translation-guide.md` holds the Chinese rendering of this same
@@ -18,8 +18,7 @@ guide). Read this before writing or updating any Chinese documentation page.
 - New terminology encountered while translating goes into Section 5. Put it in **Section 5.1** and
   copy it to all four repos only if the term is genuinely cross-cutting (sync, backup, storage,
   documentation, Flutter and Dart vocabulary). If it names something only one app has, put it in
-  that repo's **Section 5.2** and leave the other repos alone — a term nobody in MyDevice can
-  encounter does not belong in MyDevice's glossary.
+  that repo's **Section 5.2** and leave unrelated repositories' glossaries unchanged.
 
 ## 2. Structural parity rules
 

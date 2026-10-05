@@ -12,7 +12,7 @@ The file documents 22 declarations: six callback typedefs, `DataFileValidationEx
 
 ## `DataFileValidationException`
 
-Typed validation failure extracted from MyDay's `DataFileSafety` (feature-matrix §K8), carrying
+Typed validation failure carrying
 `fileName` and `message`. Apps are encouraged to throw it from `validate` callbacks so backup
 restore (P2.7) and ZIP import (P2.8) failures name the failing module file; any thrown value
 aborts validation-before-write regardless of type.
@@ -28,15 +28,15 @@ Each descriptor supplies:
 - `merge`: async-capable callback called only when local and remote both exist and raw strings
   differ. Missing-side and raw-equal branches never normalize the payload through app models.
 - `postMergeTransform`: optional async transform after conflict-free merge and conflict resolution.
-  MyDay finance uses this for forced-balance migration at its actual post-resolution position.
-- `preUploadTransform`: optional final transform with base/local/remote context. MyDay uses this to
-  call `JsonPreservation`; model-level preservation apps leave it null.
+  Applications can use it for domain migrations after resolution.
+- `preUploadTransform`: optional final transform with base/local/remote context, for example
+  calling `JsonPreservation`; model-level preservation may not need it.
 - `referencedImages`: optional app parser returning image basenames.
 - `indexMergedUploadProgress`: whether a merged upload reports module index/total. It defaults
-  true; MyDay structured modules set false to retain their current indeterminate phase.
+  true; set false for an indeterminate phase.
 
-Callbacks return final strings without package-side reformatting. This preserves MyDay's current
-compact generated JSON while allowing MyAnime/MyDevice module callbacks to return pretty JSON.
+Callbacks return final strings without package-side reformatting. Applications may
+return compact or pretty-printed JSON.
 
 ## Merge outcomes
 

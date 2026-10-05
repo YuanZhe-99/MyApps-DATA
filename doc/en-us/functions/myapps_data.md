@@ -19,7 +19,7 @@ new public API. Public types are re-exported from here; consumers must never imp
 - **Kind:** library directive (file-level declaration, not a function).
 - **Source:** `lib/myapps_data.dart` (line 12).
 - **Purpose:** Names this file as the `myapps_data` package's public barrel — the single
-  entry point through which every consumer (MyAnime, MyDay, MyDevice) imports shared
+  entry point through which consumers import shared
   functionality.
 - **Inputs:** None; it is a library declaration, not a callable.
 - **Returns:** N/A.

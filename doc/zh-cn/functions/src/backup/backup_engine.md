@@ -47,9 +47,9 @@
 
 ## 恢复
 
-`restoreBackup` 在首次写入前通过 `DataModule.validate` 校验每个被选模块的负载（K8），用 P2.4 辅助原子写入，并从 v2 blob 引用或旧 v1 内联 base64 恢复图像。缺失 blob 增加 `missingImages` 但不使恢复失败。图像键用 MyDevice 的宽容 `_safeImageBasename`（J17）净化：接受裸基名和 `images/<name>` 键；拒绝路径穿越、嵌套和绝对路径。
+`restoreBackup` 在首次写入前通过 `DataModule.validate` 校验每个被选模块的负载（K8），用 P2.4 辅助原子写入，并从 v2 blob 引用或旧 v1 内联 base64 恢复图像。缺失 blob 增加 `missingImages` 但不使恢复失败。图像键用宽容的 `_safeImageBasename`（J17）净化：接受裸基名和 `images/<name>` 键；拒绝路径穿越、嵌套和绝对路径。
 
-启用 `syntheticImagesModule`（J3；仅 MyDevice）时，`getBackupModules` 在一个捆绑携带任一种图像格式的情况下追加 `images` 模块 id，并且图像恢复以该模块被选中为前提。否则图像总是恢复。
+启用 `syntheticImagesModule`（J3）时，`getBackupModules` 在一个捆绑携带任一种图像格式的情况下追加 `images` 模块 id，并且图像恢复以该模块被选中为前提。否则图像总是恢复。
 
 ## I5 自动同步交互
 
@@ -57,4 +57,4 @@
 
 ## 自动备份
 
-`runAutoBackupIfNeeded` 有可重入守卫、每次调用重新加载设置，并且每个日历日最多创建一个备份。"今天已备份"检查扫描捆绑文件名并忽略损坏捆绑，因此被中断的写入会被重试（J14/J15）。不持久化 `lastBackupAt` 键（L3）。触发节奏由宿主拥有（J21/H5）：MyAnime/MyDevice 从它们的自动同步计时器调用它；MyDay 从它的 `ReminderService` 30 秒循环调用它。
+`runAutoBackupIfNeeded` 有可重入守卫、每次调用重新加载设置，并且每个日历日最多创建一个备份。"今天已备份"检查扫描捆绑文件名并忽略损坏捆绑，因此被中断的写入会被重试（J14/J15）。不持久化 `lastBackupAt` 键（L3）。触发节奏由宿主拥有，通过调度器钩子或其他应用服务提供。

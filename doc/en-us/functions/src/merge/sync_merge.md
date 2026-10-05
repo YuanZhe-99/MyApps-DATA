@@ -1,9 +1,7 @@
 # lib/src/merge/sync_merge.dart
 
-Generic three-way record merge engine (P2.3). Unifies the MyAnime/MyDay/MyDevice
-`mergeRecords<T>` variants: MyAnime and MyDay are byte-identical; MyDevice is a strict superset
-adding an optional `mergeUnknownFields` callback (adopted here). App-specific merge wrappers and
-`mergeAssignments` stay app-side.
+Generic three-way record merge engine with an optional `mergeUnknownFields`
+callback. Domain-specific merge wrappers and composite-key policies stay app-side.
 
 ## Declarations
 
@@ -32,6 +30,6 @@ For each ID, using `base` to detect which side changed:
 
 - `autoResolve` defaults to `false` (PLAN invariant I4).
 - `serialize` (optional) enables identical-content conflict suppression.
-- `mergeUnknownFields` (optional, MyDevice pattern) lets apps with model-level `extraJson`
+- `mergeUnknownFields` (optional) lets apps with model-level `extraJson`
   preserve unknown fields through the merge; without it, the primary record is returned as-is
-  (MyAnime/MyDay pattern).
+  without unknown-field transformation.

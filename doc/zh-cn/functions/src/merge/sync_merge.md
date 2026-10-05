@@ -1,6 +1,6 @@
 # lib/src/merge/sync_merge.dart
 
-泛型三方记录合并引擎（P2.3）。统一 MyAnime/MyDay/MyDevice 的 `mergeRecords<T>` 变体：MyAnime 和 MyDay 逐字节相同；MyDevice 是严格超集，多一个可选 `mergeUnknownFields` 回调（此处采纳）。应用特有的合并包装器和 `mergeAssignments` 留在应用侧。
+泛型三方记录合并引擎，提供可选 `mergeUnknownFields` 回调。领域专用合并包装器和复合键策略留在应用侧。
 
 ## 声明
 
@@ -29,4 +29,4 @@
 
 - `autoResolve` 默认为 `false`（PLAN 不变量 I4）。
 - `serialize`（可选）启用相同内容冲突抑制。
-- `mergeUnknownFields`（可选，MyDevice 模式）让带模型级 `extraJson` 的应用在合并中保留未知字段；没有它时，主记录原样返回（MyAnime/MyDay 模式）。
+- `mergeUnknownFields`（可选）让带模型级 `extraJson` 的应用在合并中保留未知字段；没有它时，主记录原样返回，不进行未知字段变换。

@@ -1,8 +1,8 @@
 # Behavior contract: hard invariants
 
 These are the rules the shared package must not break. They were the acceptance criteria for the
-original extraction, and they remain the compatibility contract now that three shipped apps depend on
-this package — a violation here can strand installs already in the field.
+original extraction, and they remain the compatibility contract for applications
+using this package — a violation here can strand installs already in the field.
 
 Originally the "hard invariants" table of the one-off extraction plan, which has since been retired.
 This content lives here because it is the behavior contract, not project-management history.
@@ -22,13 +22,13 @@ This content lives here because it is the behavior contract, not project-managem
 
 ## Unification rule
 
-When the three apps differ on something incidental and two of them already agree, **take the good
-unification** — change the odd app out to match, rather than adding a per-app knob to preserve the
-drift. Knobs are permanent complexity in the shared engine; incidental drift is not worth carrying.
+Prefer consistent shared behavior for incidental differences rather than adding
+per-application knobs to preserve drift. Knobs are permanent complexity in the
+shared engine; incidental drift is not worth carrying.
 Only preserve a difference when unifying would actually break the function.
 
-Genuine per-app needs stay configurable: MyDay's `ReminderService`-driven backup, its whole-file
-exchange-rate merge, MyDevice's synthetic `images` module and `mergeAssignments`.
+Domain needs stay configurable: backup triggers, whole-file merge policies,
+synthetic `images` modules and composite-key record merges.
 
 The prohibition is on *silent* picks, not deliberate ones. Every accepted unification must be flagged
 to the owner, recorded below with its behavioral consequence, and reflected in re-recorded goldens.
@@ -37,14 +37,13 @@ to the owner, recorded below with its behavioral consequence, and reflected in r
 
 | Change | Consequence |
 |---|---|
-| **N2c** — per-file upload error string | MyAnime adopted MyDay/MyDevice's `'$name: force-upload failed: …'`. A user-visible string changed, which is why I8 carries an exception. |
-| **G3** — download-error handling | MyAnime moved from abort-whole-sync to per-file error collection (engine default `failFastOnDownloadError: false`). With one module the observable outcome is unchanged. |
-| **Finalize re-download** | MyAnime's `finalizePendingSync` now issues one `GET <data file>` before uploading, matching MyDay/MyDevice. Costs one extra request per finalize and adds an abort-if-the-remote-is-unreadable guard — strictly safer, since it prevents uploading a resolution over a remote that just became unreadable. MyAnime's `sync_conflict_finalize` golden was re-recorded; the diff is exactly that one inserted GET. |
-| **ZIP traversal rejection** | An archive containing a path-traversal entry is now rejected outright (import returns false, nothing is written) instead of skipping the bad entry and importing the rest. MyAnime and MyDevice adopted MyDay's behavior. Nothing ever landed outside the app dir either way; the change is that a tampered archive can no longer be half-applied. |
-| **Resume debounce cancel** | Resume cancels a pending save-debounce before syncing, instead of leaving it queued. MyDevice adopted MyAnime's behavior; the in-flight guard already made the difference unobservable. |
+| **N2c** — per-file upload error string | Use `'$name: force-upload failed: …'` consistently. This accepted wording change is an exception to I8. |
+| **G3** — download-error handling | Collect per-file errors by default (`failFastOnDownloadError: false`); callers may explicitly request fail-fast behavior. |
+| **Finalize re-download** | `finalizePendingSync` issues one `GET <data file>` before uploading. This adds a request and aborts if the remote is unreadable, preventing a resolution from overwriting an unreadable remote. |
+| **ZIP traversal rejection** | Reject the entire archive containing a path-traversal entry (false, no writes), preventing partial application of a tampered archive. |
+| **Resume debounce cancel** | Resume cancels pending save-debounce before syncing; the in-flight guard prevents overlapping synchronization. |
 
 ## Where the per-behavior detail lives
 
-[`feature-matrix.md`](feature-matrix.md) is the historical three-way audit of the apps' original
-implementations — every behavioral point, what each app did, and whether it became `fixed` or a
-`config` knob. Read it before changing anything in the sync, backup, or ZIP engines.
+[`feature-matrix.md`](feature-matrix.md) describes shared behavior and configuration
+boundaries. Read it before changing sync, backup or ZIP engines.

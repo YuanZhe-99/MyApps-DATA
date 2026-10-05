@@ -1,6 +1,6 @@
 # lib/src/json/json_preservation.dart
 
-泛型、模式驱动和平铺映射的 JSON 未知字段保留引擎（P2.2）。从 MyDay（模式驱动递归遍历）和 MyDevice（平铺 `extraJson` 三方合并）抽取；两种风格都导出，因此每个应用保留自己既有的保留策略。应用字段名模式不在这里——它们留在应用侧，调用时传入。
+泛型、模式驱动和平铺映射的 JSON 未知字段保留引擎（P2.2）。支持递归遍历和平铺 `extraJson` 三方合并；两种风格都导出，因此每个应用保留自己既有的保留策略。应用字段名模式留在应用侧，调用时传入。
 
 ## 声明
 
@@ -8,9 +8,9 @@
 |---|---|---|---|
 | `JsonListPreservation` | 类 | A | 描述如何在对象列表的每一项中匹配并保留未知字段。 |
 | `JsonPreservationSchema` | 类 | A | 描述一个 JSON 对象层级的已知形态。 |
-| `JsonPreservation` | 类（静态工具） | A | 模式驱动的递归未知字段保留（MyDay 风格）。 |
-| `unknownJsonFields` | 函数 | A | 从映射中提取未知键（MyDevice 风格）。 |
-| `mergeUnknownJsonFields` | 函数 | A | 未知字段映射的三方合并（MyDevice 风格）。 |
+| `JsonPreservation` | 类（静态工具） | A | 模式驱动的递归未知字段保留。 |
+| `unknownJsonFields` | 函数 | A | 从映射中提取未知键。 |
+| `mergeUnknownJsonFields` | 函数 | A | 未知字段映射的三方合并。 |
 | `jsonValueEquals` | 函数 | A | 规范（键排序）JSON 值相等性。 |
 
 （另有私有辅助函数 `_canonicalJson`、`_copyMap`、`_stringKeyMap`、`_copyJsonValue`。）

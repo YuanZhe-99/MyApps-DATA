@@ -4,10 +4,9 @@ Operating guide for agents working on this repository. This file holds **only** 
 work here. Everything describing what the code *is* or *does* lives in `doc/en-us/` — see
 [Where to read what](#where-to-read-what).
 
-`myapps_data` is the shared WebDAV-sync and data-management package consumed by five sibling apps
-(**MyAnime**, **MyDay**, **MyDevice**, **MyNihongo**, **MyTranscribe**) as a git submodule at `packages/myapps_data`.
-It is the load-bearing layer under all five: a bug here ships to all of them, and a wire-format
-change here can strand existing installs.
+Keep shared documentation independent of consumer lists and adoption status.
+Document concrete package usage in the corresponding application repository.
+Preserve compatibility: a wire-format change can strand existing installs.
 
 ## Reading order
 
@@ -31,7 +30,7 @@ disagree on something you are about to change — verify, then fix the docs.
 | What does this file/function do | `doc/en-us/functions/<mirrored path>.md` |
 | Which page covers which source file | `doc/en-us/functions/INDEX.md` |
 | The behavior contract: invariants I1–I10, accepted unifications | `doc/en-us/invariants.md` |
-| Why a behavior is the way it is, per app | `doc/en-us/feature-matrix.md` (the historical three-way audit) |
+| Shared behavior and configuration choices | `doc/en-us/feature-matrix.md` |
 | English→Chinese terminology | `doc/en-us/translation-guide.md` |
 
 ## Required workflow
@@ -104,7 +103,7 @@ Other conventions:
 
 ## Behavior contract
 
-This package is consumed by five apps, so treat these as non-negotiable unless the user
+This package provides shared compatibility contracts, so treat these as non-negotiable unless the user
 explicitly decides otherwise:
 
 - The **WebDAV wire format**, remote layout, and `.lock` semantics (60s TTL, 20s heartbeat) are a

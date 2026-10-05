@@ -72,7 +72,7 @@ to the apps' current values (I3).
   - `downloadBytes(name)` - GET binary, 120s timeout, throws on non-200 (§A16).
   - `delete(name, {etag})` - DELETE, 10s timeout, swallows all errors (§A17).
   - `listSubDir(name)` - PROPFIND Depth:1, `propfindTimeout`, returns `Set<String>?` (null on
-    failure; §C-P1-P4). Adopts MyDevice's `<(?:\w+:)?href>` regex and `p.basename`. A non-207 response body
+    failure; §C). Uses `<(?:\w+:)?href>` regex and `p.basename`. A non-207 response body
     is drained before returning `null`.
 - **Remote lock primitives:**
   - `readRemoteUploadLock()` - reads and parses `.lock`; returns `({lock, etag, error})` (§B).

@@ -49,7 +49,7 @@
   - `uploadBytes(name, bytes)` — PUT 二进制，120 秒超时，非 2xx 抛出（§A14）。
   - `downloadBytes(name)` — GET 二进制，120 秒超时，非 200 抛出（§A16）。
   - `delete(name, {etag})` — DELETE，10 秒超时，吞掉所有错误（§A17）。
-  - `listSubDir(name)` — PROPFIND Depth:1，`propfindTimeout`，返回 `Set<String>?`（失败时 null；§C-P1–P4）。采用 MyDevice 的 `<(?:\w+:)?href>` 正则和 `p.basename`。非 207 的响应体会在返回 `null` 之前被排空。
+  - `listSubDir(name)` — PROPFIND Depth:1，`propfindTimeout`，返回 `Set<String>?`（失败时 null；§C）。使用 `<(?:\w+:)?href>` 正则和 `p.basename`。非 207 的响应体会在返回 `null` 之前被排空。
 - **远程锁原语：**
   - `readRemoteUploadLock()` — 读取并解析 `.lock`；返回 `({lock, etag, error})`（§B）。
   - `writeRemoteUploadLock(lock, {ifMatchEtag, ifNoneMatchAll})` — 以 `retries: 0` 写入 `.lock`（§B10/D4）。

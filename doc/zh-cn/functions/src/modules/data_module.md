@@ -8,7 +8,7 @@
 
 ## `DataFileValidationException`
 
-从 MyDay 的 `DataFileSafety`（feature-matrix §K8）抽取的类型化校验失败，携带 `fileName` 和 `message`。鼓励应用从 `validate` 回调抛出它，使备份恢复（P2.7）和 ZIP 导入（P2.8）失败能指名失败的模块文件；无论类型如何，任何被抛出的值都会中止写前校验。
+类型化校验失败携带 `fileName` 和 `message`。鼓励应用从 `validate` 回调抛出它，使备份恢复（P2.7）和 ZIP 导入（P2.8）失败能指名失败的模块文件；无论类型如何，任何被抛出的值都会中止写前校验。
 
 ## `DataModule`
 
@@ -18,12 +18,12 @@
 - `moduleId`：持久化的备份模块键；绝不重命名。
 - `validate`：供面向校验的引擎使用的应用模型解析器。P2.6 刻意保留当前同步兼容性：直接远程副本是原始的，强制下载只做语法检查。
 - `merge`：仅在本地和远程都存在且原始字符串不同时才调用的异步回调。缺失侧和原始相等分支绝不让负载经过应用模型规范化。
-- `postMergeTransform`：可选异步变换，在无冲突合并和冲突解决之后运行。MyDay 财务用它在其实际的解决后位置上做强制余额迁移。
-- `preUploadTransform`：带 base/本地/远程上下文的可选最终变换。MyDay 用它调用 `JsonPreservation`；模型级保留的应用把它留空。
+- `postMergeTransform`：可选异步变换，在无冲突合并和冲突解决之后运行。应用可用它在解决后执行领域迁移。
+- `preUploadTransform`：带 base/本地/远程上下文的可选最终变换，例如调用 `JsonPreservation`；模型级保留可能不需要此回调。
 - `referencedImages`：返回图像基名的可选应用解析器。
-- `indexMergedUploadProgress`：合并上传是否报告模块索引/总数。默认为 true；MyDay 的结构化模块设为 false，以保留它们当前的不确定阶段。
+- `indexMergedUploadProgress`：合并上传是否报告模块索引/总数。默认为 true；设为 false 使用不确定进度阶段。
 
-回调返回最终字符串，不做包侧重新格式化。这保留了 MyDay 当前紧凑的生成 JSON，同时允许 MyAnime/MyDevice 模块回调返回美化 JSON。
+回调返回最终字符串，不做包侧重新格式化。应用可返回紧凑或美化打印的 JSON。
 
 ## 合并结果
 

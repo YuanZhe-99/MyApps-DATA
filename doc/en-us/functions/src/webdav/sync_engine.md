@@ -22,7 +22,7 @@ state-machine helpers.
 ## Construction
 
 `WebDavSyncEngine` requires an app storage adapter, ordered module registry, and per-app fallback
-remote path. `failFastOnDownloadError` defaults false; MyAnime can set true at integration time.
+remote path. `failFastOnDownloadError` defaults false; callers can set true at integration time.
 Client factory, clock, and ID generator are injectable test seams. One long-lived engine per app is
 required to preserve the operation guard, progress notifier, and sticky local-change signal.
 
@@ -66,7 +66,7 @@ and saves base on success.
 
 Compatibility limits are deliberate: finalize does not share the sync/force guard, does not emit
 progress, and does not re-merge known fields changed while dialogs were open. Its fresh GET prevents
-upload over an unreadable remote and supplies MyDay preservation context. These are existing app
+upload over an unreadable remote and supplies preservation context. These are compatibility
 semantics; changing them is outside the zero-change extraction.
 
 ## Images

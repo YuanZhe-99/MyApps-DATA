@@ -1,7 +1,7 @@
 # lib/src/json/json_preservation.dart
 
-Generic, schema-driven and flat-map JSON unknown-field preservation engines (P2.2). Extracted
-from MyDay (schema-driven recursive walk) and MyDevice (flat `extraJson` three-way merge); both
+Generic, schema-driven and flat-map JSON unknown-field preservation engines (P2.2),
+supporting recursive walks and flat `extraJson` three-way merges; both
 styles are exported so each app keeps its existing preservation strategy. App field-name schemas
 do NOT live here - they stay app-side and are passed in at call time.
 
@@ -11,9 +11,9 @@ do NOT live here - they stay app-side and are passed in at call time.
 |---|---|---|---|
 | `JsonListPreservation` | class | A | Describes how to match and preserve unknown fields in one list of objects. |
 | `JsonPreservationSchema` | class | A | Describes the known shape of one JSON object level. |
-| `JsonPreservation` | class (static utils) | A | Schema-driven recursive unknown-field preservation (MyDay style). |
-| `unknownJsonFields` | function | A | Extract unknown keys from a map (MyDevice style). |
-| `mergeUnknownJsonFields` | function | A | Three-way merge of unknown-field maps (MyDevice style). |
+| `JsonPreservation` | class (static utils) | A | Schema-driven recursive unknown-field preservation. |
+| `unknownJsonFields` | function | A | Extract unknown keys from a map. |
+| `mergeUnknownJsonFields` | function | A | Three-way merge of unknown-field maps. |
 | `jsonValueEquals` | function | A | Canonical (key-sorted) JSON value equality. |
 
 (Plus private helpers `_canonicalJson`, `_copyMap`, `_stringKeyMap`, `_copyJsonValue`.)

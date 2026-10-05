@@ -64,10 +64,10 @@ minutes, J9) so a concurrent `createBackup` is never raced.
 `restoreBackup` validates every selected module payload through `DataModule.validate` before the
 first write (K8), writes atomically via P2.4 helpers, and restores images from v2 blob references
 or legacy v1 inline base64. Missing blobs increment `missingImages` without failing the restore.
-Image keys are sanitized with MyDevice's tolerant `_safeImageBasename` (J17): bare basenames and
+Image keys are sanitized with tolerant `_safeImageBasename` (J17): bare basenames and
 `images/<name>` keys are accepted; traversal, nesting, and absolute paths are rejected.
 
-With `syntheticImagesModule` (J3; MyDevice only), `getBackupModules` appends an `images` module id
+With `syntheticImagesModule` (J3), `getBackupModules` appends an `images` module id
 when a bundle carries either image format, and image restoration is gated on that module being
 selected. Otherwise images always restore.
 
@@ -83,5 +83,5 @@ every other outcome it stays off. The post-restore force-upload offer remains ap
 `runAutoBackupIfNeeded` is re-entrancy guarded, reloads settings each call, and creates at most
 one backup per calendar day. The "already backed up today" check scans bundle filenames and
 ignores corrupt bundles, so an interrupted write is retried (J14/J15). No `lastBackupAt` key is
-persisted (L3). The host owns the trigger cadence (J21/H5): MyAnime/MyDevice call it from their
-auto-sync timer; MyDay calls it from its `ReminderService` 30-second loop.
+persisted (L3). The host owns the trigger cadence, through a scheduler hook or
+another application service.
