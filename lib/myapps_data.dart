@@ -7,12 +7,22 @@
 /// storage/ (StorageAdapter, atomic I/O), json/ (preservation engine), merge/
 /// (mergeRecords&lt;T&gt;), modules/ (DataModule, ModuleRegistry), webdav/ (config,
 /// client, upload lock, sync engine, progress), sync/ (auto-sync scheduler, wake
-/// lock), backup/ (BackupEngine), data/ (ZIP transfer). Public API goes through
+/// lock), backup/ (BackupEngine), data/ (ZIP transfer), secrets/ (SecretStore,
+/// SecretExchange). Public API goes through
 /// this barrel only; consumers must not import `src/` paths directly.
 library;
 
 export 'src/settings/data_settings.dart';
 export 'src/settings/webdav_settings.dart';
+export 'src/settings/trusted_host_warning.dart';
+export 'src/settings/webdav_privacy_notice.dart';
+// Secure-endpoint policy and per-device WebDAV privacy acknowledgement.
+export 'src/webdav/endpoint_security.dart';
+export 'src/webdav/privacy_acknowledgement.dart';
+// Generic API-key secret channel: local secrets file, namespaces, exchange.
+export 'src/secrets/secrets_document.dart';
+export 'src/secrets/secret_store.dart';
+export 'src/secrets/secret_exchange.dart';
 
 // P2.1: verbatim moves from the three apps (byte-identical sources).
 export 'src/webdav/sync_progress.dart';

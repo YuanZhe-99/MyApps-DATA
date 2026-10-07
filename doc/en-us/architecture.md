@@ -43,11 +43,14 @@ automatic-sync preference and disconnect affordances are shared. Applications
 inject domain-specific content and retain operation and confirmation callbacks.
 Action tiles and backup preferences accept application labels, status and callbacks;
 the package owns their presentation while applications retain routes and storage.
+The WebDAV privacy notice, its paused-sync banner and the per-device acknowledgement
+contract are shared; applications supply the data inventory, labels, notice version and
+persistence, and decide when to pause sync.
 
 `lib/src/` is organized by area: `storage/` (`StorageAdapter`, atomic I/O), `json/` (JSON-preservation
 engines), `merge/` (`mergeRecords<T>`), `modules/` (`DataModule`/`ModuleRegistry`), `webdav/` (config,
 client, upload lock, sync engine, progress), `sync/` (auto-sync scheduler, wake lock), `backup/`
-(backup engine), `data/` (ZIP transfer). The public API is exported only through
+(backup engine), `data/` (ZIP transfer), `secrets/` (secrets file, store, exchange). The public API is exported only through
 `lib/myapps_data.dart`; consumers must not import `src/` paths directly.
 
 ## Current state (complete and in production)
@@ -97,6 +100,22 @@ The remaining engine areas provide:
   (30s), periodic (15min) auto-sync core with the `_syncing` guard, in-memory status, reload/status
   listeners, and app hooks (`isAutoSyncActive`, `runSync`, `consumeLocalDataChanged`,
   `onPeriodicTick`, `onResume`) that preserve each app's trigger topology and side effects.
+- `lib/src/webdav/endpoint_security.dart`: the pure secure-endpoint policy
+  (`evaluateEndpointSecurity`/`evaluateEndpointUrl`) with a named reason and transport class for
+  every verdict, shared by the privacy notice and secret channels. HTTPS, private networks,
+  Tailscale `*.ts.net` and EasyTier `*.et.net` pass by default; a plain-HTTP public host passes
+  only through the device-local trusted list, which applications extend only after
+  `showMyAppsTrustedHostWarning` (`lib/src/settings/trusted_host_warning.dart`) is confirmed.
+- `lib/src/webdav/privacy_acknowledgement.dart`: the per-device privacy-notice acknowledgement
+  record, `needsAcknowledgement`, the `WebDavPrivacyStatus` gate and an injected-persistence store.
+  The record is never a data module.
+- `lib/src/secrets/`: the generic API-key secret channel. `SecretsDocument` is the secrets-file
+  shape with a per-key last-writer-wins merge and tombstones; `SecretStore` reads and writes one
+  application's file (name injected, keys restricted to declared namespaces) under an in-app lock,
+  sets unparseable content aside and raises `SecretsUnreadableException` for I/O errors;
+  `SecretExchange` exchanges the file after a sync, gated by the secure-endpoint policy in both
+  directions, with conditional upload and one re-read and re-merge. The file is never a data module,
+  so backups and ZIP exports never contain it.
 
 All APIs are exported from `lib/myapps_data.dart` and covered by focused unit tests. 36 package-owned
 golden fixtures run the ten characterization sync scenarios plus backup-v2 and ZIP-export format

@@ -4,7 +4,8 @@ This is the package's public barrel file. P2.1-P2.10 export sync progress, foreg
 JSON preservation, generic merge, atomic I/O, WebDAV client, module-registry, storage-adapter,
 sync-engine, backup-engine, ZIP-transfer, and auto-sync-scheduler APIs (see
 [../architecture.md](../architecture.md)). P2.10 completes the package test gate without adding a
-new public API. Public types are re-exported from here; consumers must never import
+new public API. Settings presentation, the WebDAV privacy notice, the secure-endpoint policy and the
+privacy acknowledgement contract and the API-key secret channel are also exported. Public types are re-exported from here; consumers must never import
 `package:myapps_data/src/...` paths directly, only `package:myapps_data/myapps_data.dart`.
 
 ## Declarations

@@ -126,3 +126,29 @@ results in the application's documentation. The library imposes no consumer list
 Unit tests and package-owned synthetic registry goldens verify engine behavior,
 requests and formats. Validate wire compatibility and application regressions
 before changing shared contracts.
+
+## R. Privacy notice and endpoint security
+
+Before sync is first enabled, applications show the shared notice and make no request
+until the user confirms; declining stores nothing. The notice lists the application's
+uploaded modules and optional content, the destination host, an encryption-at-rest
+statement and the transport security from the secure-endpoint policy, with an extra
+warning for plain HTTP to a public host. Acknowledgements are per device, carry the
+notice version and are never synced, backed up or exported. Configured but
+unacknowledged sync is reported as paused so applications keep pending data and show
+the pause. The wire format, remote layout, `.lock` semantics and conflict handling are
+unchanged.
+
+## S. Secret channel
+
+An application's API-key secrets file (name injected, for example `transcribe_secrets.json`) lives
+in the app directory but is never a data module, so sync, backup and ZIP never touch it. After a
+sync the exchange runs against the same server and remote directory, outside the engine `.lock`,
+and only when the secure-endpoint verdict allows it; a refused endpoint makes no request in either
+direction. Keys merge per key by `updatedAt`, last writer wins, with tombstones; the upload is
+conditional on the downloaded ETag (or create-only), and a 412 triggers exactly one re-read and
+re-merge, failing without upload if that read fails. Force upload and force download skip the merge
+in their direction. The local read, merge and write share one in-app lock with key edits and make
+no network call while it is held; unparseable content is renamed to
+`<name>.unreadable-<UTC timestamp>`, and an I/O error is a typed failure that changes nothing.
+Namespaces restrict which ids an application reads and writes.

@@ -6,7 +6,13 @@ WebDAV 设置：[webdav_settings.dart](src/settings/webdav_settings.md)
 设置呈现：[data_settings.dart](src/settings/data_settings.md)
 （枚举、两个组件及其构造器和 build 方法，共七个声明）。
 
-`lib/` 中已记录的声明总数：**217**（Tier A：217，Tier B：0）。
+WebDAV 隐私提醒：[webdav_privacy_notice.dart](src/settings/webdav_privacy_notice.md)
+（四个类、构造器、build 方法和一个对话框辅助函数，共十一个声明）。
+
+受信任主机警告：[trusted_host_warning.dart](src/settings/trusted_host_warning.md)
+（三个类、构造器、一个 build 方法和一个对话框辅助函数，共八个声明）。
+
+`lib/` 中已记录的声明总数：**312**（Tier A：312，Tier B：0）。
 
 本索引覆盖 `lib/src/` 下的每个声明。每个新源文件都必须在此获得一行，并在 `functions/` 下获得自己的页面，路径与源路径镜像——去掉 `lib/`、把 `.dart` 换成 `.md`。
 
@@ -29,3 +35,8 @@ WebDAV 设置：[webdav_settings.dart](src/settings/webdav_settings.md)
 | `lib/src/backup/backup_engine.dart` | [src/backup/backup_engine.md](src/backup/backup_engine.md) | 26 | 26 |
 | `lib/src/data/zip_transfer.dart` | [src/data/zip_transfer.md](src/data/zip_transfer.md) | 9 | 9 |
 | `lib/src/sync/auto_sync_scheduler.dart` | [src/sync/auto_sync_scheduler.md](src/sync/auto_sync_scheduler.md) | 32 | 32 |
+| `lib/src/webdav/endpoint_security.dart` | [src/webdav/endpoint_security.md](src/webdav/endpoint_security.md) | 13 | 13 |
+| `lib/src/webdav/privacy_acknowledgement.dart` | [src/webdav/privacy_acknowledgement.md](src/webdav/privacy_acknowledgement.md) | 14 | 14 |
+| `lib/src/secrets/secrets_document.dart` | [src/secrets/secrets_document.md](src/secrets/secrets_document.md) | 15 | 15 |
+| `lib/src/secrets/secret_store.dart` | [src/secrets/secret_store.md](src/secrets/secret_store.md) | 18 | 18 |
+| `lib/src/secrets/secret_exchange.dart` | [src/secrets/secret_exchange.md](src/secrets/secret_exchange.md) | 16 | 16 |

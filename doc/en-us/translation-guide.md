@@ -136,6 +136,13 @@ which one it belongs in — see the rule in Section 1.
 | display name | 名称 | 个人资料里的名字，界面标签写作「名称」，勿写成「昵称」或「用户名」。zh-TW 用「名稱」，ja 用「名前」 |
 | dynamic color | 动态取色 | 仅 Android 12 及以上：界面颜色取自壁纸（Material You）；其他平台使用种子色 |
 | seed color | 种子色 | `AppTheme.seedColor`，生成整套 Material 3 配色的品牌色；每个 App 各不相同 |
+| privacy notice | 隐私提醒 | 首次启用 WebDAV 同步前显示的说明对话框 |
+| acknowledgement (privacy notice) | 确认记录 | 按设备保存、带提醒版本，不同步 |
+| secure endpoint | 安全端点 | HTTPS，或指向私有网络/受信任主机的 HTTP |
+| trusted host | 受信任主机 | 用户在本设备上加入信任列表的主机 |
+| sync paused | 同步已暂停 | 确认隐私提醒前保留配置和待同步数据 |
+| tombstone | 墓碑 | 表示已删除的条目，防止被另一设备的副本复活 |
+| secret namespace | 密钥命名空间 | 应用声明的 id 前缀，限定其可读写的密钥 |
 
 ### 5.2 MyApps-DATA-specific terms
 

@@ -1,6 +1,6 @@
 # lib/myapps_data.dart
 
-这是包的公共桶文件。P2.1–P2.10 导出同步进度、前台唤醒锁、JSON 保留、泛型合并、原子 I/O、WebDAV 客户端、模块注册表、存储适配器、同步引擎、备份引擎、ZIP 传输和自动同步调度器 API（见 [../architecture.md](../architecture.md)）。P2.10 在不新增公共 API 的情况下补全了包测试门槛。公共类型从这里再导出；使用者绝不能直接导入 `package:myapps_data/src/...` 路径，只能导入 `package:myapps_data/myapps_data.dart`。
+这是包的公共桶文件。P2.1–P2.10 导出同步进度、前台唤醒锁、JSON 保留、泛型合并、原子 I/O、WebDAV 客户端、模块注册表、存储适配器、同步引擎、备份引擎、ZIP 传输和自动同步调度器 API（见 [../architecture.md](../architecture.md)）。P2.10 在不新增公共 API 的情况下补全了包测试门槛。设置呈现、WebDAV 隐私提醒、安全端点策略、隐私确认契约和 API Key 密钥通道也由此导出。公共类型从这里再导出；使用者绝不能直接导入 `package:myapps_data/src/...` 路径，只能导入 `package:myapps_data/myapps_data.dart`。
 
 ## 声明
 

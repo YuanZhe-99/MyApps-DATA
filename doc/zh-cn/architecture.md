@@ -33,8 +33,10 @@ lib/shared/services/import_export_service.dart
 状态和回调；共享包管理呈现，应用保留路由和存储。
 WebDAV 连接字段、保存与测试、手动与强制同步、自动同步偏好及断开连接入口均为
 共享组件。应用注入领域专用内容并保留操作和确认回调。
+WebDAV 隐私提醒、同步暂停提示和按设备确认契约均为共享内容；应用提供数据清单、
+文案、提醒版本和持久化，并决定何时暂停同步。
 
-`lib/src/` 按区域组织：`storage/`（`StorageAdapter`、原子 I/O）、`json/`（JSON 保留引擎）、`merge/`（`mergeRecords<T>`）、`modules/`（`DataModule`/`ModuleRegistry`）、`webdav/`（配置、客户端、上传锁、同步引擎、进度）、`sync/`（自动同步调度器、唤醒锁）、`backup/`（备份引擎）、`data/`（ZIP 传输）。公共 API 只通过 `lib/myapps_data.dart` 导出；使用者不得直接导入 `src/` 路径。
+`lib/src/` 按区域组织：`storage/`（`StorageAdapter`、原子 I/O）、`json/`（JSON 保留引擎）、`merge/`（`mergeRecords<T>`）、`modules/`（`DataModule`/`ModuleRegistry`）、`webdav/`（配置、客户端、上传锁、同步引擎、进度）、`sync/`（自动同步调度器、唤醒锁）、`backup/`（备份引擎）、`data/`（ZIP 传输）、`secrets/`（密钥文件、存储、交换）。公共 API 只通过 `lib/myapps_data.dart` 导出；使用者不得直接导入 `src/` 路径。
 
 ## 当前状态（完整并在生产中）
 
@@ -57,6 +59,9 @@ WebDAV 连接字段、保存与测试、手动与强制同步、自动同步偏�
 - `lib/src/backup/backup_engine.dart`：`BackupEngine` v2 捆绑创建（逐模块原始 JSON 字符串 + `_imageRefs`，无 `createdAt`/`modules`）、sha256 内容寻址 blob 存储并带引用计数 GC（10 分钟宽限、遇不可解析中止）、按龄保留、受守卫的每日自动备份、损坏捆绑标记、带 I5 自动同步禁用交互的写前校验 v1/v2 恢复、合成 `images` 模块开关，以及宽容的图像键净化器（J17）。
 - `lib/src/data/zip_transfer.dart`：`ZipTransfer` 注册表驱动 ZIP 导出（模块文件 + `images/<basename>`、按应用的归档名前缀）和两阶段校验导入，采用严格路径穿越拒绝，带可配置的宽容开关（`rejectUnknownEntries`、`strictUtf8`、`validateBeforeWrite`、`atomicWrites`）和可选的导入后钩子。
 - `lib/src/sync/auto_sync_scheduler.dart`：`AutoSyncScheduler` 生命周期观察、防抖（30 秒）、周期（15 分钟）自动同步核心，带 `_syncing` 守卫、内存状态、重载/状态监听器，以及应用钩子（`isAutoSyncActive`、`runSync`、`consumeLocalDataChanged`、`onPeriodicTick`、`onResume`），它们保留每个应用的触发拓扑和副作用。
+- `lib/src/webdav/endpoint_security.dart`：纯函数安全端点策略（`evaluateEndpointSecurity`/`evaluateEndpointUrl`），每个判定都带具名原因和传输类别，由隐私提醒和密钥通道共用。HTTPS、私有网络、Tailscale `*.ts.net` 和 EasyTier `*.et.net` 默认通过；公网明文 HTTP 主机只能通过设备本地受信任列表放行，应用须在 `showMyAppsTrustedHostWarning`（`lib/src/settings/trusted_host_warning.dart`）确认后才能加入该列表。
+- `lib/src/webdav/privacy_acknowledgement.dart`：按设备保存的隐私提醒确认记录、`needsAcknowledgement`、`WebDavPrivacyStatus` 门控和注入持久化的存储。该记录从不是数据模块。
+- `lib/src/secrets/`：通用 API Key 密钥通道。`SecretsDocument` 是密钥文件格式，带按键后写优先合并和墓碑；`SecretStore` 在应用内锁下读写单个应用的文件（文件名由应用注入，密钥限定在声明的命名空间内），无法解析的内容改名保留，I/O 错误抛出 `SecretsUnreadableException`；`SecretExchange` 在同步后交换该文件，两个方向都受安全端点策略限制，带条件上传和一次重读重合并。该文件从不是数据模块，因此备份和 ZIP 导出从不包含它。
 
 所有 API 都从 `lib/myapps_data.dart` 导出，并由聚焦的单元测试覆盖。36 个包自有的 golden 固定件对含 1、5 和 4 个模块的合成注册表运行十个特征同步场景以及备份 v2 和 ZIP 导出格式检查；未过滤的 CI 测试命令负责验证它们。当前声明清单见 [functions/INDEX.md](functions/INDEX.md)。
 

@@ -1,5 +1,34 @@
 # Changelog
 
+## 1.1.0 - 2026-10-06
+
+WebDAV first-enable privacy notice support. No wire-format, remote-layout, `.lock` or
+conflict-handling change; every golden fixture is unchanged.
+
+- `evaluateEndpointSecurity(Uri, {trustedHosts})` / `evaluateEndpointUrl(String, {trustedHosts})`:
+  app-neutral secure-endpoint policy returning an `EndpointVerdict` (named `EndpointReason`,
+  `EndpointSecurity` transport class, `allowed`). The rule table is unchanged from the existing
+  API-key sync rule; its test vectors are ported.
+- `WebDavPrivacyAcknowledgement`, `needsAcknowledgement`, `webDavPrivacyStatus` and
+  `WebDavPrivacyAcknowledgementStore`: per-device, versioned acknowledgement through injected
+  callbacks or a `storage_config.json` key. Configured but unacknowledged sync reports
+  `syncPaused` so applications keep pending data and show the pause.
+- `MyAppsWebDavPrivacyNotice`, `showMyAppsWebDavPrivacyNotice` and
+  `MyAppsWebDavSyncPausedBanner`: shared notice with application-supplied inventory, labels,
+  destination, encryption statement and endpoint verdict, plus an extra insecure-HTTP warning.
+- Generic API-key secret channel (`lib/src/secrets/`): `SecretsDocument`/`SecretEntry` with
+  `mergeSecretsDocuments` (per-key last-writer-wins by `updatedAt`, tombstones, tie to remote) and
+  `encodeSecretsDocument`, byte-compatible with MyTranscribe's `transcribe_secrets.json`;
+  `SecretStore` (app-injected file name, declared namespaces, in-app lock, unparseable content
+  renamed to `<name>.unreadable-<UTC timestamp>`, `SecretsUnreadableException` for I/O errors);
+  `SecretExchange` (`sync`/`forceUpload`/`forceDownload`, gated by `evaluateEndpointUrl` in both
+  directions, ETag-conditional upload with one re-read and re-merge on 412). The secrets file is
+  never a data module. No `WebDavClient` change was needed.
+- `EndpointReason.easytier` names `*.et.net` hosts (EasyTier); MyTranscribe's equivalent value was
+  mislabelled `zerotier`. `normalizeTrustedHostEntry` validates a typed trusted host, and
+  `showMyAppsTrustedHostWarning` requires an explicit risk acknowledgement before an application
+  adds a plain-HTTP public host to the device's trusted list.
+
 ## 1.0.5 - 2026-10-05
 
 Shared WebDAV connection fields and save/test, manual/force sync, auto-sync and
